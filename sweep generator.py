@@ -2,6 +2,8 @@ from scipy.io.wavfile import write
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+
 def sweepgenerator(f1, f2, T, sr, savepath):
     """
     Generates an Exponential Sine Sweep (ESS) and saves it in a .wav file.
