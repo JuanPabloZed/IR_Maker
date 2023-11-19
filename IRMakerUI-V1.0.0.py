@@ -356,6 +356,7 @@ class MainWindow(QMainWindow):
         plt.show()
     
     def spectroIR(self,file,srate):
+        # spectro de la moyenne des deux canaux
         IR = (np.asarray(file[:,0]) + np.asarray(file[:,1]))/2
         f, t, Sxx = spectrogram(IR, srate)
         plt.clf()
