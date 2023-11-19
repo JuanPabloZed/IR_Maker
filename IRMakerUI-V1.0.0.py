@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
         gen_sweep = QPushButton("Sweep generator",self)
         gen_sweep.setGeometry(800, 60, 180, 70)
         gen_sweep.clicked.connect(lambda : self.sweep())
-        #Launch IR
+        # Create IR
         ir = QPushButton("Create IR",self)
         ir.setGeometry(220,100,560,30)
         ir.clicked.connect(lambda : self.programme(self.sweep_data,self.response_data,self.save_data,begin_freq.text(),end_freq.text(),self.sr.text()))
