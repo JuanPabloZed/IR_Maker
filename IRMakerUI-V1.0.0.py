@@ -346,8 +346,9 @@ class MainWindow(QMainWindow):
         fft_outfile = np.fft.rfft(h_panned_npoutfile)
         f = np.fft.rfftfreq(pad_length,1/srate)
         # graph
+        plt.clf()
         plt.semilogx(f,20*np.log10(fft_outfile))
-        plt.xlim(left=20)
+        plt.xlim(20,max(f))
         plt.title('Spectrum of the IR')
         plt.xlabel('Frequency (Hz)')
         plt.ylabel('Amplitude (dB)')
@@ -357,6 +358,7 @@ class MainWindow(QMainWindow):
     def spectroIR(self,file,srate):
         IR = (np.asarray(file[:,0]) + np.asarray(file[:,1]))/2
         f, t, Sxx = spectrogram(IR, srate)
+        plt.clf()
         plt.pcolormesh(t, f, Sxx)
         plt.ylabel('Frequency [Hz]')
         plt.xlabel('Time [sec]')
