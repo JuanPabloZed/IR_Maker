@@ -91,29 +91,6 @@ class MainWindow(QMainWindow):
         self.ir_graph.setGeometry(30, 280, 940, 400)
         self.ir_graph.setLabel('bottom', 'Time (s)')
         self.ir_graph.setBackground('w')
-
-        #plot left
-        # self.labelgraphL = QLabel("Left Channel",self)
-        # self.labelgraphL.setAlignment(Qt.AlignCenter)
-        # self.labelgraphL.setGeometry(30,250,900,20)
-        # self.irL_graph=pg.PlotWidget(self)
-        # self.irL_graph.setGeometry(30, 270, 900, 180)
-        # self.irL_graph.setLabel('left', 'Amplitude')
-        # self.irL_graph.setLabel('bottom', 'Time (s)')
-        # self.irL_graph.setBackground('w')
-        # #plot right
-        # self.labelgraphR = QLabel("Right Channel",self)
-        # self.labelgraphR.setAlignment(Qt.AlignCenter)
-        # self.labelgraphR.setGeometry(30,450,900,20)
-        # self.irR_graph=pg.PlotWidget(self)
-        # self.irR_graph.setGeometry(30, 470, 900, 180)
-        # self.irR_graph.setLabel('left', 'Amplitude')
-        # self.irR_graph.setLabel('bottom', 'Time (s)')
-        # self.irR_graph.setBackground('w')
-        # self.irL_graph.setVisible(False)
-        # self.irR_graph.setVisible(False)
-        # self.labelgraphL.setVisible(False)
-        # self.labelgraphR.setVisible(False)
   
     def graph(self, data):
         if data.ndim == 1:
@@ -163,12 +140,6 @@ class MainWindow(QMainWindow):
             ay.setTicks([yticks])
 
             self.ir_graph.showGrid(x=True, y=True)
-            # self.irL_graph.setYRange(-1.1*max(abs(dataL)),1.1*max(abs(dataL)))
-            # plot right
-            # self.irR_graph.clear()
-            # pen = pg.mkPen(color = 'b')
-            # self.irR_graph.plot(t[0:len(dataR)],dataR/max(abs(dataL)),pen=pen)
-            # self.irR_graph.setYRange(-1.1*max(abs(dataR)),1.1*max(abs(dataR)))
             return 
         
     
