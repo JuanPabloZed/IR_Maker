@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         end_freq.setMaxLength(20)
         end_freq.setPlaceholderText("Enter value")
         end_freq.setGeometry(410, 60, 180, 30)
-        #Sampling rate                             To get info in line edit : fe.text()
+        #Sampling rate                             
         labelsr = QLabel("Sampling rate (Hz)", self)
         labelsr.setAlignment(Qt.AlignCenter)
         labelsr.setGeometry(600, 30, 180, 30)
