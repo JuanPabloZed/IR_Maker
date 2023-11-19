@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy.io.wavfile import read, write
-from scipy.signal import convolve
+from scipy.signal import convolve, spectrogram
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -92,29 +92,10 @@ class MainWindow(QMainWindow):
         self.ir_graph.setGeometry(30, 280, 940, 400)
         self.ir_graph.setLabel('bottom', 'Time (s)')
         self.ir_graph.setBackground('w')
-        # spectre ou spectro selon mono ou stereo
-        ir_srate, ir_outfile = read(self.save_data)
-        if ir_outfile.ndim == 1:
-            sp_button = QPushButton('Spectrum of the IR',self)
-            sp_button.setGeometry(800,180,180,170)
-            sp_button.clicked.connect(lambda : self.fftIR(self.save_data))
-        elif ir_outfile.ndim == 2:
-            sp_button = QPushButton('Spectrogram of the IR',self)
-            sp_button.setGeometry(800,180,180,170)
-            sp_button.clicked.connect(lambda : self.spectroIR(self.save_data))
 
-    def fftIR(filepath):
-        # get signal & compute FFT
-        srate, outfile = read(filepath,mmap=False)
-        npoutfile = np.asarray(outfile)
-        pad_length = next_power_of_2(len(npoutfile))
-        padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
-        h_panned_npoutfile = padded_npoutfile*np.hanning(pad_length)
-        fft_outfile = np.fft.rfft(h_panned_npoutfile)
-        f = np.fft.rfftfreq(pad_length,1/srate)
-        # graph
-        plt.plot(f,fft_outfile)
-        return
+        self.sp_button = QPushButton('Spectro ou FFT',self)
+        self.sp_button.setGeometry(800,180,180,70)
+        self.sp_button.setVisible(False)
 
     def graph(self, data):
         if data.ndim == 1:
@@ -345,10 +326,46 @@ class MainWindow(QMainWindow):
         if ir.ndim == 2:
             # stereo IR
             self.graph(ir)
+            self.sp_button.setText('Spectrogram of the IR')
+            self.sp_button.setVisible(True)
+            self.sp_button.clicked.connect(lambda : self.spectroIR(ir,sr))
             # if mono
         elif ir.ndim == 1:
             # mono IR
             self.graph(ir)
+            self.sp_button.setText('Spectrum of the IR')
+            self.sp_button.setVisible(True)
+            self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
+    
+    def fftIR(self,file,srate):
+        # get signal & compute FFT
+        npoutfile = np.asarray(file)
+        pad_length = next_power_of_2(len(npoutfile))
+        padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
+        h_panned_npoutfile = padded_npoutfile*np.hanning(pad_length)
+        fft_outfile = np.fft.rfft(h_panned_npoutfile)
+        f = np.fft.rfftfreq(pad_length,1/srate)
+        # graph
+        plt.semilogx(f,20*np.log10(fft_outfile))
+        plt.xlim(left=20)
+        plt.title('Spectrum of the IR')
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Amplitude (dB)')
+        plt.grid()
+        plt.show()
+    
+    def spectroIR(self,file,srate):
+        IR = (np.asarray(file[:,0]) + np.asarray(file[:,1]))/2
+        f, t, Sxx = spectrogram(IR, srate)
+        plt.pcolormesh(t, f, Sxx)
+        plt.ylabel('Frequency [Hz]')
+        plt.xlabel('Time [sec]')
+        plt.yscale('log')
+        plt.ylim(20,max(f))
+        plt.title("Spectrogram of the IR")
+        plt.colorbar()
+        plt.show()
+               
     
     def sweep(self):
         dialog=Sweep_Window(self)
