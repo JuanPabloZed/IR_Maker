@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
         ir = QPushButton("Create IR",self)
         ir.setGeometry(220,100,560,30)
         ir.clicked.connect(lambda : self.programme(self.sweep_data,self.response_data,self.save_data,begin_freq.text(),end_freq.text(),self.sr.text()))
-        # spectre
+        # plot
         self.labelgraph = QLabel("Your IR",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
         self.labelgraph.setGeometry(30,250,940,30)
@@ -91,6 +91,15 @@ class MainWindow(QMainWindow):
         self.ir_graph.setGeometry(30, 280, 940, 400)
         self.ir_graph.setLabel('bottom', 'Time (s)')
         self.ir_graph.setBackground('w')
+        # spectre
+        sp_button = QPushButton('Spectrogram of the IR',self)
+        sp_button.setGeometry(800,180,180,170)
+        sp_button.clicked.connect(lambda : self.fftIR(self.save_data))
+
+    def fftIR(filepath):
+        
+        return
+
   
     def graph(self, data):
         if data.ndim == 1:
