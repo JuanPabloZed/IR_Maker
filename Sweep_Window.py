@@ -57,7 +57,7 @@ class Sweep_Window(QMainWindow):
         gen_sweep = QPushButton("Generate ESS",self)
         gen_sweep.setGeometry(280,100,940,60)       
         gen_sweep.clicked.connect(lambda : self.sweep(begin_freq.text(), end_freq.text(),self.sr.text(),self.T.text(),self.save_data))
-        #spectre
+        # plot
         self.labelgraph = QLabel("Your ESS",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
         self.labelgraph.setGeometry(30,220,1440,20)

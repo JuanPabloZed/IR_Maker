@@ -2,6 +2,7 @@
 # V1.0.0
 #Deconvolver maison
 import numpy as np
+import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy.io.wavfile import read, write
 from scipy.signal import convolve
@@ -103,10 +104,16 @@ class MainWindow(QMainWindow):
             sp_button.clicked.connect(lambda : self.spectroIR(self.save_data))
 
     def fftIR(filepath):
+        # get signal & compute FFT
         srate, outfile = read(filepath,mmap=False)
-        pad_length = next_power_of_2(len(outfile))
-        padded_outfile = np.pad(outfile,(0,pad_length-len(outfile)),'constant',constant_values=(0,0))
-        f = np.fft.rfftfreq()
+        npoutfile = np.asarray(outfile)
+        pad_length = next_power_of_2(len(npoutfile))
+        padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
+        h_panned_npoutfile = padded_npoutfile*np.hanning(pad_length)
+        fft_outfile = np.fft.rfft(h_panned_npoutfile)
+        f = np.fft.rfftfreq(pad_length,1/srate)
+        # graph
+        plt.plot(f,fft_outfile)
         return
 
     def graph(self, data):
