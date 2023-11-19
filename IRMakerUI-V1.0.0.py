@@ -91,19 +91,27 @@ class MainWindow(QMainWindow):
         self.ir_graph.setGeometry(30, 280, 940, 400)
         self.ir_graph.setLabel('bottom', 'Time (s)')
         self.ir_graph.setBackground('w')
-        # spectre
-        sp_button = QPushButton('Spectrogram of the IR',self)
-        sp_button.setGeometry(800,180,180,170)
-        sp_button.clicked.connect(lambda : self.fftIR(self.save_data))
+        # spectre ou spectro selon mono ou stereo
+        ir_srate, ir_outfile = read(self.save_data)
+        if ir_outfile.ndim == 1:
+            sp_button = QPushButton('Spectrum of the IR',self)
+            sp_button.setGeometry(800,180,180,170)
+            sp_button.clicked.connect(lambda : self.fftIR(self.save_data))
+        elif ir_outfile.ndim == 2:
+            sp_button = QPushButton('Spectrogram of the IR',self)
+            sp_button.setGeometry(800,180,180,170)
+            sp_button.clicked.connect(lambda : self.spectroIR(self.save_data))
 
     def fftIR(filepath):
-        
+        srate, outfile = read(filepath,mmap=False)
+        pad_length = next_power_of_2(len(outfile))
+        padded_outfile = np.pad(outfile,(0,pad_length-len(outfile)),'constant',constant_values=(0,0))
+        f = np.fft.rfftfreq()
         return
 
-  
     def graph(self, data):
         if data.ndim == 1:
-            #)MainWindow.resize(self,1000,700)
+            # MainWindow.resize(self,1000,700)
             self.labelgraph.setVisible(True)
             self.ir_graph.setVisible(True)
             i=-1
@@ -339,7 +347,8 @@ class MainWindow(QMainWindow):
         dialog=Sweep_Window(self)
         dialog.show()
 
-
+def next_power_of_2(n):
+    return 1 << (int(np.log2(n - 1)) + 1)
 # main
 # sweeppath = "C:\IRs\Test\Sweeps\Sweep20to20k-44,1k-10sec.wav"
 # recordpath = "C:\IRs\Test\Réponses réelles\Test Chainsaw 12 EQed.wav"
