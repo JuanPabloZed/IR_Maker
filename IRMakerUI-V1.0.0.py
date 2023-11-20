@@ -2,15 +2,18 @@
 # V1.0.0
 #Deconvolver maison
 import numpy as np
+import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy.io.wavfile import read, write
-from scipy.signal import convolve
+from scipy.signal import convolve, spectrogram
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import pyqtgraph as pg
 from Sweep_Window import Sweep_Window
 import sys
+
+
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -65,7 +68,7 @@ class MainWindow(QMainWindow):
         end_freq.setMaxLength(20)
         end_freq.setPlaceholderText("Enter value")
         end_freq.setGeometry(410, 60, 180, 30)
-        #Sampling rate                             To get info in line edit : fe.text()
+        #Sampling rate                             
         labelsr = QLabel("Sampling rate (Hz)", self)
         labelsr.setAlignment(Qt.AlignCenter)
         labelsr.setGeometry(600, 30, 180, 30)
@@ -77,11 +80,11 @@ class MainWindow(QMainWindow):
         gen_sweep = QPushButton("Sweep generator",self)
         gen_sweep.setGeometry(800, 60, 180, 70)
         gen_sweep.clicked.connect(lambda : self.sweep())
-        #Launch IR
+        # Create IR
         ir = QPushButton("Create IR",self)
         ir.setGeometry(220,100,560,30)
         ir.clicked.connect(lambda : self.programme(self.sweep_data,self.response_data,self.save_data,begin_freq.text(),end_freq.text(),self.sr.text()))
-        # spectre
+        # plot
         self.labelgraph = QLabel("Your IR",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
         self.labelgraph.setGeometry(30,250,940,30)
@@ -90,32 +93,13 @@ class MainWindow(QMainWindow):
         self.ir_graph.setLabel('bottom', 'Time (s)')
         self.ir_graph.setBackground('w')
 
-        #plot left
-        # self.labelgraphL = QLabel("Left Channel",self)
-        # self.labelgraphL.setAlignment(Qt.AlignCenter)
-        # self.labelgraphL.setGeometry(30,250,900,20)
-        # self.irL_graph=pg.PlotWidget(self)
-        # self.irL_graph.setGeometry(30, 270, 900, 180)
-        # self.irL_graph.setLabel('left', 'Amplitude')
-        # self.irL_graph.setLabel('bottom', 'Time (s)')
-        # self.irL_graph.setBackground('w')
-        # #plot right
-        # self.labelgraphR = QLabel("Right Channel",self)
-        # self.labelgraphR.setAlignment(Qt.AlignCenter)
-        # self.labelgraphR.setGeometry(30,450,900,20)
-        # self.irR_graph=pg.PlotWidget(self)
-        # self.irR_graph.setGeometry(30, 470, 900, 180)
-        # self.irR_graph.setLabel('left', 'Amplitude')
-        # self.irR_graph.setLabel('bottom', 'Time (s)')
-        # self.irR_graph.setBackground('w')
-        # self.irL_graph.setVisible(False)
-        # self.irR_graph.setVisible(False)
-        # self.labelgraphL.setVisible(False)
-        # self.labelgraphR.setVisible(False)
-  
+        self.sp_button = QPushButton('Spectro ou FFT',self)
+        self.sp_button.setGeometry(800,180,180,70)
+        self.sp_button.setVisible(False)
+
     def graph(self, data):
         if data.ndim == 1:
-            #)MainWindow.resize(self,1000,700)
+            # MainWindow.resize(self,1000,700)
             self.labelgraph.setVisible(True)
             self.ir_graph.setVisible(True)
             i=-1
@@ -161,12 +145,6 @@ class MainWindow(QMainWindow):
             ay.setTicks([yticks])
 
             self.ir_graph.showGrid(x=True, y=True)
-            # self.irL_graph.setYRange(-1.1*max(abs(dataL)),1.1*max(abs(dataL)))
-            # plot right
-            # self.irR_graph.clear()
-            # pen = pg.mkPen(color = 'b')
-            # self.irR_graph.plot(t[0:len(dataR)],dataR/max(abs(dataL)),pen=pen)
-            # self.irR_graph.setYRange(-1.1*max(abs(dataR)),1.1*max(abs(dataR)))
             return 
         
     
@@ -348,16 +326,56 @@ class MainWindow(QMainWindow):
         if ir.ndim == 2:
             # stereo IR
             self.graph(ir)
+            self.sp_button.setText('Spectrogram of the IR')
+            self.sp_button.setVisible(True)
+            self.sp_button.clicked.connect(lambda : self.spectroIR(ir,sr))
             # if mono
         elif ir.ndim == 1:
             # mono IR
             self.graph(ir)
+            self.sp_button.setText('Spectrum of the IR')
+            self.sp_button.setVisible(True)
+            self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
+    
+    def fftIR(self,file,srate):
+        # get signal & compute FFT
+        npoutfile = np.asarray(file)
+        pad_length = next_power_of_2(len(npoutfile))
+        padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
+        h_panned_npoutfile = padded_npoutfile*np.hanning(pad_length)
+        fft_outfile = np.fft.rfft(h_panned_npoutfile)
+        f = np.fft.rfftfreq(pad_length,1/srate)
+        # graph
+        plt.clf()
+        plt.semilogx(f,20*np.log10(fft_outfile))
+        plt.xlim(20,max(f))
+        plt.title('Spectrum of the IR')
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Amplitude (dB)')
+        plt.grid()
+        plt.show()
+    
+    def spectroIR(self,file,srate):
+        # spectro de la moyenne des deux canaux
+        IR = (np.asarray(file[:,0]) + np.asarray(file[:,1]))/2
+        f, t, Sxx = spectrogram(IR, srate)
+        plt.clf()
+        plt.pcolormesh(t, f, Sxx)
+        plt.ylabel('Frequency [Hz]')
+        plt.xlabel('Time [sec]')
+        plt.yscale('log')
+        plt.ylim(20,max(f))
+        plt.title("Spectrogram of the IR")
+        plt.colorbar()
+        plt.show()
+               
     
     def sweep(self):
         dialog=Sweep_Window(self)
         dialog.show()
 
-
+def next_power_of_2(n):
+    return 1 << (int(np.log2(n - 1)) + 1)
 # main
 # sweeppath = "C:\IRs\Test\Sweeps\Sweep20to20k-44,1k-10sec.wav"
 # recordpath = "C:\IRs\Test\Réponses réelles\Test Chainsaw 12 EQed.wav"

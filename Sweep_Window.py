@@ -13,7 +13,7 @@ class Sweep_Window(QMainWindow):
         super(Sweep_Window, self).__init__(parent)
         Sweep_Window.resize(self, 1500, 800)
         self.setWindowTitle('Sweep generator')
-        #Saving file
+        # Saving file
         labelsave = QLabel("Select saving location", self)
         labelsave.setAlignment(Qt.AlignCenter)
         labelsave.setGeometry(280, 30, 180, 30)
@@ -21,7 +21,7 @@ class Sweep_Window(QMainWindow):
         self.file_save.setGeometry(280, 60, 180, 30)
         self.save_data=' '
         self.file_save.clicked.connect(lambda: self.saveSweepDialog())
-        #Freq de début
+        # Freq de début
         labelfreqbeg = QLabel("Begining Frequency (Hz)", self)
         labelfreqbeg.setAlignment(Qt.AlignCenter)
         labelfreqbeg.setGeometry(470, 30, 180, 30)
@@ -29,7 +29,7 @@ class Sweep_Window(QMainWindow):
         begin_freq.setMaxLength(20)
         begin_freq.setPlaceholderText("Enter value")
         begin_freq.setGeometry(470, 60, 180, 30)
-        #Freq de fin
+        # Freq de fin
         labelfreqend = QLabel("Ending frequency (Hz)", self)
         labelfreqend.setAlignment(Qt.AlignCenter)
         labelfreqend.setGeometry(660, 30, 180, 30)
@@ -37,14 +37,14 @@ class Sweep_Window(QMainWindow):
         end_freq.setMaxLength(20)
         end_freq.setPlaceholderText("Enter value")
         end_freq.setGeometry(660, 60, 180, 30)
-        #Duration of sweep
+        # Duration of sweep
         sweeplabel=QLabel("Duration (s)",self)
         sweeplabel.setAlignment(Qt.AlignCenter)
         sweeplabel.setGeometry(850, 30, 180, 30)
         self.T = QLineEdit(self)
         self.T.setPlaceholderText("Enter value")
         self.T.setGeometry(850, 60, 180, 30)
-        #Sampling rate                             To get info in line edit : fe.text()
+        # Sampling rate
         labelsr = QLabel("Sampling frequency (Hz)", self)
         labelsr.setAlignment(Qt.AlignCenter)
         labelsr.setGeometry(1040, 30, 180, 30)
@@ -53,11 +53,11 @@ class Sweep_Window(QMainWindow):
         self.sr.setPlaceholderText("Enter value")
         self.sr.setGeometry(1040, 60, 180, 30)
         
-        #Generatin sweep
+        # Generate sweep
         gen_sweep = QPushButton("Generate ESS",self)
         gen_sweep.setGeometry(280,100,940,60)       
         gen_sweep.clicked.connect(lambda : self.sweep(begin_freq.text(), end_freq.text(),self.sr.text(),self.T.text(),self.save_data))
-        #spectre
+        # plot
         self.labelgraph = QLabel("Your ESS",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
         self.labelgraph.setGeometry(30,220,1440,20)
@@ -67,7 +67,7 @@ class Sweep_Window(QMainWindow):
         self.graph.setLabel('bottom', 'Time (s)')
         self.graph.setBackground('w')
         
-        #spectrogramme
+        # spectrogramme
         self.Spectro_button=QPushButton("Spectrogram of your ESS",self)
         self.Spectro_button.setGeometry(280,160,940,60)
         self.Spectro_button.setVisible(False)
