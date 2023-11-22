@@ -149,8 +149,7 @@ class Sweep_Window(QMainWindow):
         return
     
     def Spectrogram(self,x,fs):
-        f, t, Sxx = spectrogram(x, fs)
-        plt.pcolormesh(t, f, Sxx)
+        plt.specgram(x,fs)
         plt.ylabel('Frequency [Hz]')
         plt.xlabel('Time [sec]')
         plt.title("Spectrogram of your ESS")

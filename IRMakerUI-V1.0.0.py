@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy.io.wavfile import read, write
-from scipy.signal import convolve, spectrogram, welch
+from scipy.signal import convolve
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -367,29 +367,17 @@ class MainWindow(QMainWindow):
         f = np.fft.rfftfreq(pad_length,1/srate)
         
         self.graphFFT(f,fft_outfile,irfile,srate)
-
-        # graph
-        # plt.clf()
-        # plt.semilogx(f,smooth(20*np.log10(fft_outfile),45))
-        # plt.xlim(20,max(f))
-        # plt.title('Spectrum of the IR')
-        # plt.xlabel('Frequency (Hz)')
-        # plt.ylabel('Amplitude (dB)')
-        # plt.grid()
-        # plt.show()
     
     def spectroIR(self,file,srate):
         # spectro de la moyenne des deux canaux
         IR = (np.asarray(file[:,0]) + np.asarray(file[:,1]))/2
-        f, t, Sxx = spectrogram(IR, srate)
-        plt.clf()
-        plt.pcolormesh(t, f, Sxx)
-        plt.ylabel('Frequency [Hz]')
-        plt.xlabel('Time [sec]')
-        plt.yscale('log')
-        plt.ylim(20,max(f))
-        plt.title("Spectrogram of the IR")
-        plt.colorbar()
+        npoutfile = np.asarray(IR)
+        pad_length = next_power_of_2(next_power_of_2(len(npoutfile)))
+        padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
+        plt.specgram(padded_npoutfile,noverlap=64,NFFT=128,Fs=srate)
+        plt.ylim(20,20000)
+        plt.xlim(0,len(IR)/srate)
+        # plt.plot(onedata)
         plt.show()
                
     
