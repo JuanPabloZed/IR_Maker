@@ -91,13 +91,14 @@ class MainWindow(QMainWindow):
         self.ir_graph=pg.PlotWidget(self)
         self.ir_graph.setGeometry(30, 280, 940, 400)
         self.ir_graph.setLabel('bottom', 'Time (s)')
+        self.ir_graph.setLabel('left', 'Amplitude')
         self.ir_graph.setBackground('w')
 
         self.sp_button = QPushButton('Spectro ou FFT',self)
         self.sp_button.setGeometry(800,180,180,70)
         self.sp_button.setVisible(False)
 
-    def graph(self, data):
+    def graphIR(self, data):
         if data.ndim == 1:
             # MainWindow.resize(self,1000,700)
             self.labelgraph.setVisible(True)
@@ -112,9 +113,9 @@ class MainWindow(QMainWindow):
             pen = pg.mkPen(color = 'b')
             self.ir_graph.plot(t[0:len(data_mono)],normdata_mono,pen=pen)
             # y ticks
-            ay = self.ir_graph.getAxis('left')
-            yticks = [(0,'Mono')]
-            ay.setTicks([yticks])
+            # ay = self.ir_graph.getAxis('left')
+            # yticks = [(0,'Mono')]
+            # ay.setTicks([yticks])
 
             self.ir_graph.showGrid(x=True, y=True)
             return
@@ -325,36 +326,57 @@ class MainWindow(QMainWindow):
             # if stereo
         if ir.ndim == 2:
             # stereo IR
-            self.graph(ir)
-            self.sp_button.setText('Spectrogram of the IR')
+            self.graphIR(ir)
+            self.sp_button.setText('Spectrogram')
             self.sp_button.setVisible(True)
             self.sp_button.clicked.connect(lambda : self.spectroIR(ir,sr))
             # if mono
         elif ir.ndim == 1:
             # mono IR
-            self.graph(ir)
-            self.sp_button.setText('Spectrum of the IR')
+            self.graphIR(ir)
+            self.sp_button.setText('Spectrum')
             self.sp_button.setVisible(True)
             self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
     
-    def fftIR(self,file,srate):
+    def graphFFT(self,f,fft,irfile,srfile):
+        self.ir_graph.clear()
+        pen = pg.mkPen(color = 'r')
+        self.ir_graph.plot(f,smooth(20*np.log10(abs(fft)),45),pen=pen)
+        self.ir_graph.setLabel('bottom','Frequency (Hz)')
+        self.ir_graph.setLogMode(x=True)
+        self.ir_graph.showGrid(x=True,y=True)
+        self.sp_button.setText('Temporal signal')
+        self.sp_button.clicked.connect(lambda : self.replotIRmono(irfile,srfile))
+        return
+
+    def replotIRmono(self,irfile,srfile):
+        self.graphIR(irfile)
+        self.ir_graph.setLogMode(x=False)
+        self.sp_button.setText('Spectrum')
+        self.sp_button.clicked.connect(lambda : self.fftIR(irfile,srfile))
+        return
+
+    def fftIR(self,irfile,srate):
         # get signal & compute FFT
-        npoutfile = np.asarray(file)
+        npoutfile = np.asarray(irfile)
         pad_length = next_power_of_2(next_power_of_2(len(npoutfile)))
         padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
         h_panned_npoutfile = padded_npoutfile*np.blackman(pad_length)
         # fft_outfile = np.fft.rfft(h_panned_npoutfile)
         fft_outfile = np.fft.rfft(h_panned_npoutfile)
         f = np.fft.rfftfreq(pad_length,1/srate)
+        
+        self.graphFFT(f,fft_outfile,irfile,srate)
+
         # graph
-        plt.clf()
-        plt.semilogx(f,smooth(20*np.log10(fft_outfile),45))
-        plt.xlim(20,max(f))
-        plt.title('Spectrum of the IR')
-        plt.xlabel('Frequency (Hz)')
-        plt.ylabel('Amplitude (dB)')
-        plt.grid()
-        plt.show()
+        # plt.clf()
+        # plt.semilogx(f,smooth(20*np.log10(fft_outfile),45))
+        # plt.xlim(20,max(f))
+        # plt.title('Spectrum of the IR')
+        # plt.xlabel('Frequency (Hz)')
+        # plt.ylabel('Amplitude (dB)')
+        # plt.grid()
+        # plt.show()
     
     def spectroIR(self,file,srate):
         # spectro de la moyenne des deux canaux
