@@ -25,18 +25,18 @@ class Sweep_Window(QMainWindow):
         labelfreqbeg = QLabel("Begining Frequency (Hz)", self)
         labelfreqbeg.setAlignment(Qt.AlignCenter)
         labelfreqbeg.setGeometry(470, 30, 180, 30)
-        begin_freq = QLineEdit(self)
-        begin_freq.setMaxLength(20)
-        begin_freq.setPlaceholderText("Enter value")
-        begin_freq.setGeometry(470, 60, 180, 30)
+        self.begin_freq = QLineEdit(self)
+        self.begin_freq.setMaxLength(20)
+        self.begin_freq.setPlaceholderText("Enter value")
+        self.begin_freq.setGeometry(470, 60, 180, 30)
         # Freq de fin
         labelfreqend = QLabel("Ending frequency (Hz)", self)
         labelfreqend.setAlignment(Qt.AlignCenter)
         labelfreqend.setGeometry(660, 30, 180, 30)
-        end_freq = QLineEdit(self)
-        end_freq.setMaxLength(20)
-        end_freq.setPlaceholderText("Enter value")
-        end_freq.setGeometry(660, 60, 180, 30)
+        self.end_freq = QLineEdit(self)
+        self.end_freq.setMaxLength(20)
+        self.end_freq.setPlaceholderText("Enter value")
+        self.end_freq.setGeometry(660, 60, 180, 30)
         # Duration of sweep
         sweeplabel=QLabel("Duration (s)",self)
         sweeplabel.setAlignment(Qt.AlignCenter)
@@ -56,7 +56,7 @@ class Sweep_Window(QMainWindow):
         # Generate sweep
         gen_sweep = QPushButton("Generate ESS",self)
         gen_sweep.setGeometry(280,100,940,60)       
-        gen_sweep.clicked.connect(lambda : self.sweep(begin_freq.text(), end_freq.text(),self.sr.text(),self.T.text(),self.save_data))
+        gen_sweep.clicked.connect(lambda : self.sweep(self.begin_freq.text(), self.end_freq.text(),self.sr.text(),self.T.text(),self.save_data))
         # plot
         self.labelgraph = QLabel("Your ESS",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
@@ -147,13 +147,20 @@ class Sweep_Window(QMainWindow):
         self.sweepgenerator(f1, f2, T, sr, savepath)
         self.Spectro_button.setVisible(True)
         return
-    
+
     def Spectrogram(self,x,fs):
-        plt.specgram(x,fs)
+        npoutfile = np.asarray(x)
+        pad_length = next_power_of_2(next_power_of_2(len(npoutfile)))
+        padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
+        f,t,Sxx = spectrogram(padded_npoutfile,fs=fs,nfft=len(padded_npoutfile)//50,nperseg=len(padded_npoutfile)//400)
+        plt.pcolormesh(t,f,20*np.log10(Sxx))
+        cb = plt.colorbar()
+        cb.remove()
+        plt.ylim(15,22000)
+        plt.xlim(0,len(x)/fs)
         plt.ylabel('Frequency [Hz]')
         plt.xlabel('Time [sec]')
         plt.title("Spectrogram of your ESS")
-        plt.colorbar()
         plt.show()
     
 
@@ -180,3 +187,6 @@ class Sweep_Window(QMainWindow):
         self.graph.plot(t,data/max(abs(data)),pen=pen)
         #self.graph.setYRange(-1.1*max(abs(data)),1.1*max(abs(data)))
         return
+
+def next_power_of_2(n):
+        return 1 << (int(np.log2(n - 1)) + 1)

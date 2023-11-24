@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 from scipy.io.wavfile import read, write
-from scipy.signal import convolve
+from scipy.signal import convolve, spectrogram
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -374,12 +374,13 @@ class MainWindow(QMainWindow):
         npoutfile = np.asarray(IR)
         pad_length = next_power_of_2(next_power_of_2(len(npoutfile)))
         padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
-        plt.specgram(padded_npoutfile,noverlap=64,NFFT=128,Fs=srate)
-        plt.ylim(20,20000)
-        plt.xlim(0,len(IR)/srate)
-        # plt.plot(onedata)
-        plt.show()
-               
+        f,t,Sxx = spectrogram(padded_npoutfile,fs=srate,nfft=len(padded_npoutfile)//50,nperseg=len(padded_npoutfile)//400)
+        img = pg.ImageItem()
+        self.ir_graph.clear()
+        self.ir_graph.addItem(img)
+        img.setImage(Sxx)
+        img.scale(t[-1]/np.size(Sxx, axis=1),f[-1]/np.size(Sxx, axis=0))
+        self.ir_graph.setLimits(xMin=0, xMax=t[-1], yMin=0, yMax=f[-1])
     
     def sweep(self):
         dialog=Sweep_Window(self)
