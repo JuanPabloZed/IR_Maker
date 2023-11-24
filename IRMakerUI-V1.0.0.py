@@ -20,70 +20,91 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle("Ir Maker")
         MainWindow.resize(self, 1000, 730)
+        
         #Creator Info
-        labelcreator=QLabel("IR Maker® Developped by Nathan Zwahlen, Benjamin Quiédeville & Hugo Perrier.",self)
+        labelcreator = QLabel("IR Maker® Developped by Nathan Zwahlen, Benjamin Quiédeville & Hugo Perrier.",self)
         labelcreator.setGeometry(490,700,500,15)
         labelcreator.setAlignment(Qt.AlignRight)
-        labelversion=QLabel("V1.0.0",self)
+
+        labelversion = QLabel("V1.0.0",self)
         labelversion.setGeometry(490,715,500,15)
         labelversion.setAlignment(Qt.AlignRight)
+        
         #Choix du fichier du sweep
         labelsweep = QLabel("Select sweep file", self)
         labelsweep.setAlignment(Qt.AlignCenter)
         labelsweep.setGeometry(30, 30, 180, 30)
+       
         self.file_sweep=QPushButton("Select file",self)
         self.file_sweep.setGeometry(30, 60, 180, 30)
-        self.sweep_data=' '
+        self.sweep_data = ' '
         self.file_sweep.clicked.connect(lambda : self.openFileSweep())
         
         #Choix du deuxième fichier 
         labelresp = QLabel("Select response file", self)
         labelresp.setAlignment(Qt.AlignCenter)
         labelresp.setGeometry(30, 100, 180, 30)
+        
         self.file_response = QPushButton("Select file",self)
         self.file_response.setGeometry(30, 130, 180, 30)
-        self.response_data=' '
+        self.response_data_filename = ' '
         self.file_response.clicked.connect(lambda: self.openFileResponse())
+        
         #Choix fichier de save
         labelsave = QLabel("Select saving location", self)
         labelsave.setAlignment(Qt.AlignCenter)
         labelsave.setGeometry(30, 170, 180, 30)
+        
         self.file_save = QPushButton("Saving location",self)
         self.file_save.setGeometry(30, 200, 180, 30)
-        self.save_data=' '
+        self.save_data_filename = ' '
         self.file_save.clicked.connect(lambda: self.saveFileDialog())
+        
         #Freq de début
         labelfreqbeg = QLabel("Begining frequency (Hz)", self)
         labelfreqbeg.setAlignment(Qt.AlignCenter)
         labelfreqbeg.setGeometry(220, 30, 180, 30)
+        
         begin_freq = QLineEdit(self)
         begin_freq.setMaxLength(20)
         begin_freq.setPlaceholderText("Enter value")
         begin_freq.setGeometry(220, 60, 180, 30)
+        
         #Freq de fin
         labelfreqend = QLabel("Ending frequency (Hz)", self)
         labelfreqend.setAlignment(Qt.AlignCenter)
         labelfreqend.setGeometry(410, 30, 180, 30)
+        
         end_freq = QLineEdit(self)
         end_freq.setMaxLength(20)
         end_freq.setPlaceholderText("Enter value")
         end_freq.setGeometry(410, 60, 180, 30)
+        
         #Sampling rate                             
         labelsr = QLabel("Sampling rate (Hz)", self)
         labelsr.setAlignment(Qt.AlignCenter)
         labelsr.setGeometry(600, 30, 180, 30)
+        
         self.sr = QLineEdit(self)
         self.sr.setMaxLength(20)
         self.sr.setPlaceholderText("Enter value")
         self.sr.setGeometry(600, 60, 180, 30)
+        
         #Génération du sweep 
         gen_sweep = QPushButton("Sweep generator",self)
         gen_sweep.setGeometry(800, 60, 180, 70)
         gen_sweep.clicked.connect(lambda : self.sweep())
+        
         # Create IR
         ir = QPushButton("Create IR",self)
         ir.setGeometry(220,100,560,30)
-        ir.clicked.connect(lambda : self.programme(self.sweep_data,self.response_data,self.save_data,begin_freq.text(),end_freq.text(),self.sr.text()))
+        ir.clicked.connect(lambda : self.programme(self.sweep_data,
+                                                   self.response_data_filename,
+                                                   self.save_data_filename, 
+                                                   float(begin_freq.text()),
+                                                   float(end_freq.text()),
+                                                   self.sr.text()))
+        
         # plot
         self.labelgraph = QLabel("Your IR",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
@@ -98,25 +119,23 @@ class MainWindow(QMainWindow):
         self.sp_button.setGeometry(800,180,180,70)
         self.sp_button.setVisible(False)
 
-    def graphIR(self, data):
+    def graphIR(self, data: np.ndarray):
         if data.ndim == 1:
             # MainWindow.resize(self,1000,700)
             self.labelgraph.setVisible(True)
             self.ir_graph.setVisible(True)
-            i=-1
-            while abs(data[i]) <= 0.00002:
-                i -= 1
+            # i=-1
+            # while abs(data[i]) <= 0.00002:
+            #     i -= 1
+            i = data[np.abs(data[i]) <= 0.00002].shape[0] - 1
+
             data_mono = data[0:i]
             normdata_mono = data_mono/np.max(abs(data))
             t = [x/int(self.sr.text()) for x in range(len(data_mono))]
             self.ir_graph.clear()
             pen = pg.mkPen(color = 'b')
             self.ir_graph.plot(t[0:len(data_mono)],normdata_mono,pen=pen)
-            # y ticks
-            # ay = self.ir_graph.getAxis('left')
-            # yticks = [(0,'Mono')]
-            # ay.setTicks([yticks])
-
+            
             self.ir_graph.showGrid(x=True, y=True)
             return
         
@@ -126,6 +145,7 @@ class MainWindow(QMainWindow):
             i = -1
             while abs(data[i,0]) <= 0.00005 and abs(data[i,1]) <= 0.00005:
                 i -= 1
+
             dataL = data[0:i,0]
             dataR = data[0:i,1]
             normdataL = dataL/np.max(abs(data))
@@ -189,7 +209,7 @@ class MainWindow(QMainWindow):
                     c=1
                 else :
                     _,c = np.shape(test)
-        self.response_data=fileName
+        self.response_data_filename=fileName
         self.file_response.setText(Path(fileName).name)
         return
         
@@ -197,14 +217,13 @@ class MainWindow(QMainWindow):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav", options=options)
-        self.save_data=fileName
+        self.save_data_filename=fileName
         self.file_save.setText(Path(fileName).name)
         return
 
-    def normalize(self,values):
-        return values / np.max(values)
     
-    def deconvolver(self,sweeppath, recordpath, targetname,f1, f2, sr):
+    def deconvolver(self, sweeppath: str, recordpath: str, targetname: str, 
+                    f1: float, f2: float, sr: float) -> np.ndarray:
         """
         Calulates the IR of a system in which the sine sweep contained in sweeppath has been emitted.
         Uses theoretical inverse convolution of an Exponential Sine Sweep (ESS) to compute the IR.
@@ -217,10 +236,14 @@ class MainWindow(QMainWindow):
             - targetname (str) : name of the IR wav file (don't forget the '.wav' at the end)
             - f1 (float) : initial frequency for the sweep
             - f2 (float) : final frequency for the sweep
-            - sr (int) : IR sample rate (44100Hz, 48000Hz, 88200Hz, 96000Hz, 192000Hz)
+            - sr (float) : IR sample rate (44100Hz, 48000Hz, 88200Hz, 96000Hz, 192000Hz)
+
         OUTPUTS : 
             - ir (or irL & irR if stereo output), the ndarray containing the IR
         """
+        def normalize(values):
+            return values / np.max(values)
+
         # load files
         rateout, outfile = read(recordpath, mmap=False)
     
@@ -241,7 +264,7 @@ class MainWindow(QMainWindow):
         k = np.exp(t*R / T)
         invess = np.flip(ess)/k
         # sweep normalization
-        norminvess = self.normalize(invess)
+        norminvess = normalize(invess)
         # if recording in stereo
         if outfile.ndim == 2:
             # removing the last zeros of the recording
@@ -252,8 +275,8 @@ class MainWindow(QMainWindow):
             outfileR = outfile[0:len(outfile)+i , 1]
     
             # normalization of the recording
-            normoutfileL = self.normalize(outfileL)
-            normoutfileR = self.normalize(outfileR)
+            normoutfileL = normalize(outfileL)
+            normoutfileR = normalize(outfileR)
             
             # "deconvolving"
             irL = convolve(normoutfileL, norminvess)
@@ -269,7 +292,7 @@ class MainWindow(QMainWindow):
             # merge in one stereo wav file
             ir = np.column_stack((irL, irR))
             # normalization of the IR for int16 encoding
-            normir = self.normalize(ir)*32767
+            normir = normalize(ir)*32767
             normirL = normir[:,0]
             normirR = normir[:,1]
             i = -1
@@ -292,7 +315,7 @@ class MainWindow(QMainWindow):
             outfile = outfile[0:len(outfile)+i]
     
             # normalization of the recording
-            normoutfile = self.normalize(outfile)
+            normoutfile = normalize(outfile)
     
             # "deconvolving"
             ir = convolve(normoutfile, norminvess)
@@ -302,7 +325,7 @@ class MainWindow(QMainWindow):
                 i += 1
             ir = ir[i:len(ir)]
             # normalization of the IR for int16 encoding
-            normir = self.normalize(ir)*32767
+            normir = normalize(ir)*32767
             normir = normir.astype(np.int16)
             i = -1
             while abs(normir[i]) <= 13:
@@ -312,16 +335,17 @@ class MainWindow(QMainWindow):
             write(targetname +'.wav', rateout, normir)
             return (normir)
             
-    def programme(self,sweep_data,response_data,save_data,begin_freq,end_freq,sr):
+    def programme(self, sweep_data_path: str, response_data_path: str, save_data_path: str, 
+                  begin_freq: float, end_freq: float, sr: float) -> None:
         
         # on choppe les paramètres nécessaires au calcul
-        sweeppath = sweep_data
-        recordpath = response_data
-        targetname = save_data
-        f1 = float(begin_freq)
-        f2 = float(end_freq)
-        sr=int(sr)
-        ir = self.deconvolver(sweeppath, recordpath, targetname, f1, f2, sr)
+        sweep_path = sweep_data_path
+        recordpath = response_data_path
+        targetname = save_data_path
+        f1 = begin_freq
+        f2 = end_freq
+        sr = sr
+        ir = self.deconvolver(sweep_path, recordpath, targetname, f1, f2, sr)
         # output depending of the format in mode
             # if stereo
         if ir.ndim == 2:
@@ -337,6 +361,8 @@ class MainWindow(QMainWindow):
             self.sp_button.setText('Spectrum')
             self.sp_button.setVisible(True)
             self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
+        
+        return
     
     def graphFFT(self,f,fft,irfile,srfile):
         self.ir_graph.clear()
@@ -368,16 +394,17 @@ class MainWindow(QMainWindow):
         
         self.graphFFT(f,fft_outfile,irfile,srate)
     
-    def spectroIR(self,file,srate):
+    def spectroIR(self, ir: np.ndarray, srate: float):
         # spectro de la moyenne des deux canaux
-        IR = (np.asarray(file[:,0]) + np.asarray(file[:,1]))/2
-        npoutfile = np.asarray(IR)
-        pad_length = next_power_of_2(next_power_of_2(len(npoutfile)))
-        padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
-        plt.specgram(padded_npoutfile,noverlap=64,NFFT=128,Fs=srate)
+        ir_to_plot = (ir[:,0] + ir[:,1])/2.0
+        pad_length = next_power_of_2(next_power_of_2(len(ir_to_plot)))
+        padded_ir_to_plot = np.pad(ir_to_plot,
+                                   (0,pad_length-len(ir_to_plot)),
+                                   'constant',
+                                   constant_values=(0,0))
+        plt.specgram(padded_ir_to_plot, noverlap=64, NFFT=128, Fs=srate)
         plt.ylim(20,20000)
-        plt.xlim(0,len(IR)/srate)
-        # plt.plot(onedata)
+        plt.xlim(0, len(ir_to_plot)/srate)
         plt.show()
                
     
@@ -385,10 +412,10 @@ class MainWindow(QMainWindow):
         dialog=Sweep_Window(self)
         dialog.show()
 
-def next_power_of_2(n):
+def next_power_of_2(n: int) -> int:
     return 1 << (int(np.log2(n - 1)) + 1)
 
-def smooth(y, box_pts):
+def smooth(y: np.ndarray, box_pts: int) -> np.ndarray:
     box = np.ones(box_pts)/box_pts
     y_smooth = np.convolve(y, box, mode='same')
     return y_smooth

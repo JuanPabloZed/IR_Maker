@@ -2,7 +2,7 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 from scipy.io.wavfile import write
-from scipy.signal import spectrogram
+# from scipy.signal import spectrogram
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -13,6 +13,7 @@ class Sweep_Window(QMainWindow):
         super(Sweep_Window, self).__init__(parent)
         Sweep_Window.resize(self, 1500, 800)
         self.setWindowTitle('Sweep generator')
+        
         # Saving file
         labelsave = QLabel("Select saving location", self)
         labelsave.setAlignment(Qt.AlignCenter)
@@ -21,6 +22,7 @@ class Sweep_Window(QMainWindow):
         self.file_save.setGeometry(280, 60, 180, 30)
         self.save_data=' '
         self.file_save.clicked.connect(lambda: self.saveSweepDialog())
+        
         # Freq de début
         labelfreqbeg = QLabel("Begining Frequency (Hz)", self)
         labelfreqbeg.setAlignment(Qt.AlignCenter)
@@ -29,6 +31,7 @@ class Sweep_Window(QMainWindow):
         begin_freq.setMaxLength(20)
         begin_freq.setPlaceholderText("Enter value")
         begin_freq.setGeometry(470, 60, 180, 30)
+        
         # Freq de fin
         labelfreqend = QLabel("Ending frequency (Hz)", self)
         labelfreqend.setAlignment(Qt.AlignCenter)
@@ -37,6 +40,7 @@ class Sweep_Window(QMainWindow):
         end_freq.setMaxLength(20)
         end_freq.setPlaceholderText("Enter value")
         end_freq.setGeometry(660, 60, 180, 30)
+        
         # Duration of sweep
         sweeplabel=QLabel("Duration (s)",self)
         sweeplabel.setAlignment(Qt.AlignCenter)
@@ -44,6 +48,7 @@ class Sweep_Window(QMainWindow):
         self.T = QLineEdit(self)
         self.T.setPlaceholderText("Enter value")
         self.T.setGeometry(850, 60, 180, 30)
+        
         # Sampling rate
         labelsr = QLabel("Sampling frequency (Hz)", self)
         labelsr.setAlignment(Qt.AlignCenter)
@@ -56,7 +61,8 @@ class Sweep_Window(QMainWindow):
         # Generate sweep
         gen_sweep = QPushButton("Generate ESS",self)
         gen_sweep.setGeometry(280,100,940,60)       
-        gen_sweep.clicked.connect(lambda : self.sweep(begin_freq.text(), end_freq.text(),self.sr.text(),self.T.text(),self.save_data))
+        gen_sweep.clicked.connect(lambda : self.sweep(begin_freq.text(), end_freq.text(), self.sr.text(), self.T.text(), self.save_data))
+    
         # plot
         self.labelgraph = QLabel("Your ESS",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
@@ -72,7 +78,7 @@ class Sweep_Window(QMainWindow):
         self.Spectro_button.setGeometry(280,160,940,60)
         self.Spectro_button.setVisible(False)
         self.x=0
-        self.Spectro_button.clicked.connect(lambda : self.Spectrogram(self.x,int(self.sr.text())))
+        self.Spectro_button.clicked.connect(lambda : self.spectrogram(self.x,int(self.sr.text())))
         '''
         self.labelspectro = QLabel("Spectrogram of Generated Sweep",self)
         self.labelspectro.setAlignment(Qt.AlignCenter)
@@ -105,7 +111,7 @@ class Sweep_Window(QMainWindow):
         self.save_data=fileName
         return
     
-    def sweepgenerator(self,f1, f2, T, sr, savepath):
+    def sweepgenerator(self, f1: float, f2: float, T: int, sr: float, savepath: str) -> None:
         """
         Generates an Exponential Sine Sweep (ESS) and saves it in a .wav file.
         -----
@@ -113,14 +119,14 @@ class Sweep_Window(QMainWindow):
             - f1 (float) : initial frequency for the sweep (Hz)
             - f2 (float) : final frequency for the sweep (Hz)
             - T (int) : duration of the sweep (sec)
-            - sr (int) : sample rate of the wav file
+            - sr (float) : sample rate of the wav file
             - savepath (str) : path where the ESS will be saved
     
         OUTPUTS : 
             None, the function only saves the wav file of the ESS.
         """
         R = np.log(f2/f1)   # sweep rate
-        time = np.array([i/sr for i in range(T*sr)]) # time array for the graph
+        # time = np.array([i/sr for i in range(T*sr)]) # time array for the graph
         self.x = np.array([np.sin(2*np.pi*f1*T/R*(np.exp(t/sr*R/T)-1)) for t in range(T*sr)])*32767
         self.x = self.x.astype(np.int16)
         # genertion of the sweep
@@ -148,8 +154,8 @@ class Sweep_Window(QMainWindow):
         self.Spectro_button.setVisible(True)
         return
     
-    def Spectrogram(self,x,fs):
-        plt.specgram(x,fs)
+    def spectrogram(self, x: np.ndarray, fs: float):
+        plt.specgram(x, fs)
         plt.ylabel('Frequency [Hz]')
         plt.xlabel('Time [sec]')
         plt.title("Spectrogram of your ESS")
