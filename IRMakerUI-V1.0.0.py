@@ -88,41 +88,68 @@ class MainWindow(QMainWindow):
         self.labelgraph = QLabel("Your IR",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
         self.labelgraph.setGeometry(30,250,940,30)
-        self.ir_graph=pg.PlotWidget(self)
-        self.ir_graph.setGeometry(30, 280, 940, 400)
-        self.ir_graph.setLabel('bottom', 'Time (s)')
-        self.ir_graph.setLabel('left', 'Amplitude')
-        self.ir_graph.setBackground('w')
-
+        # plot mono
+        self.ir_graphmono=pg.PlotWidget(self)
+        self.ir_graphmono.setGeometry(30, 280, 940, 400)
+        self.ir_graphmono.setLabel('bottom', 'Time (s)')
+        self.ir_graphmono.setLabel('left', 'Amplitude')
+        self.ir_graphmono.setBackground('w')
+        # plot stereo
+        self.ir_graphstereo=pg.PlotWidget(self)
+        self.ir_graphstereo.setGeometry(30, 280, 940, 400)
+        self.ir_graphstereo.setLabel('bottom', 'Time (s)')
+        self.ir_graphstereo.setLabel('left', 'Amplitude')
+        self.ir_graphstereo.setBackground('w')
+        self.ir_graphstereo.setVisible(False)
+        # Bouton spectro/fft
         self.sp_button = QPushButton('Spectro ou FFT',self)
         self.sp_button.setGeometry(800,180,180,70)
         self.sp_button.setVisible(False)
+        # spectro
+        self.ir_spectro=pg.PlotWidget(self)
+        self.ir_spectro.setGeometry(30, 280, 940, 400)
+        self.ir_spectro.setVisible(False)
+        self.ir_spectro.setLabel('bottom','Time (s)')
+        self.ir_spectro.setLabel('left','Frequency (Hz)')
+        self.ir_spectro.setBackground('w')
+        # FFT
+        self.ir_fft=pg.PlotWidget(self)
+        self.ir_fft.setGeometry(30, 280, 940, 400)
+        self.ir_fft.setLabel('bottom','Frequency (Hz)')
+        self.ir_fft.setLabel('left','Amplitude (dB)')
+        self.ir_fft.setBackground('w')
+        self.ir_fft.setLogMode(x=True)
+        self.ir_fft.showGrid(x=True,y=True)
+        self.ir_fft.setVisible(False)
 
     def graphIR(self, data):
         if data.ndim == 1:
-            # MainWindow.resize(self,1000,700)
-            self.labelgraph.setVisible(True)
-            self.ir_graph.setVisible(True)
+            self.ir_spectro.setVisible(False)
+            self.ir_fft.setVisible(False)
+            self.ir_graphstereo.setVisible(False)
+            self.ir_graphmono.setVisible(True)
             i=-1
             while abs(data[i]) <= 0.00002:
                 i -= 1
             data_mono = data[0:i]
             normdata_mono = data_mono/np.max(abs(data))
             t = [x/int(self.sr.text()) for x in range(len(data_mono))]
-            self.ir_graph.clear()
+            self.ir_graphmono.clear()
             pen = pg.mkPen(color = 'b')
-            self.ir_graph.plot(t[0:len(data_mono)],normdata_mono,pen=pen)
+            self.ir_graphmono.plot(t[0:len(data_mono)],normdata_mono,pen=pen)
             # y ticks
-            # ay = self.ir_graph.getAxis('left')
-            # yticks = [(0,'Mono')]
-            # ay.setTicks([yticks])
+            aymono = self.ir_graphmono.getAxis('left')
+            yticksmono = [(0,'Mono')]
+            aymono.setTicks([yticksmono])
 
-            self.ir_graph.showGrid(x=True, y=True)
+            self.ir_graphmono.showGrid(x=True, y=True)
             return
         
         if data.ndim==2:
-            self.labelgraph.setVisible(True)
-            self.ir_graph.setVisible(True)
+            self.ir_spectro.setVisible(False)
+            self.ir_fft.setVisible(False)
+            self.ir_graphmono.setVisible(False)
+            self.ir_graphstereo.setVisible(True)
             i = -1
             while abs(data[i,0]) <= 0.00005 and abs(data[i,1]) <= 0.00005:
                 i -= 1
@@ -132,20 +159,20 @@ class MainWindow(QMainWindow):
             normdataR = dataR/np.max(abs(data))
             t = [x/int(self.sr.text()) for x in range(len(data[:,0]))]
             # plot
-            self.ir_graph.clear()
+            self.ir_graphstereo.clear()
             # left
             pen = pg.mkPen(color = 'r')
-            self.ir_graph.plot(t[0:len(dataL)],normdataL + 2.2,pen=pen)
+            self.ir_graphstereo.plot(t[0:len(dataL)],normdataL + 2.2,pen=pen)
             # right
             pen = pg.mkPen(color = 'b')
-            self.ir_graph.plot(t[0:len(dataR)],normdataR,pen=pen)
+            self.ir_graphstereo.plot(t[0:len(dataR)],normdataR,pen=pen)
             
             # y axis ticks
-            ay = self.ir_graph.getAxis('left')
-            yticks = [(0,'Right'),(2.2,'Left')]
-            ay.setTicks([yticks])
+            aystereo = self.ir_graphstereo.getAxis('left')
+            yticksstereo = [(0,'Right'),(2.2,'Left')]
+            aystereo.setTicks([yticksstereo])
 
-            self.ir_graph.showGrid(x=True, y=True)
+            self.ir_graphstereo.showGrid(x=True, y=True)
             return 
         
     
@@ -320,7 +347,7 @@ class MainWindow(QMainWindow):
         targetname = save_data
         f1 = float(begin_freq)
         f2 = float(end_freq)
-        sr=int(sr)
+        sr = int(sr)
         ir = self.deconvolver(sweeppath, recordpath, targetname, f1, f2, sr)
         # output depending of the format in mode
             # if stereo
@@ -338,25 +365,11 @@ class MainWindow(QMainWindow):
             self.sp_button.setVisible(True)
             self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
     
-    def graphFFT(self,f,fft,irfile,srfile):
-        self.ir_graph.clear()
-        pen = pg.mkPen(color = 'r')
-        self.ir_graph.plot(f,smooth(20*np.log10(abs(fft)),45),pen=pen)
-        self.ir_graph.setLabel('bottom','Frequency (Hz)')
-        self.ir_graph.setLogMode(x=True)
-        self.ir_graph.showGrid(x=True,y=True)
-        self.sp_button.setText('Temporal signal')
-        self.sp_button.clicked.connect(lambda : self.replotIRmono(irfile,srfile))
-        return
-
-    def replotIRmono(self,irfile,srfile):
-        self.graphIR(irfile)
-        self.ir_graph.setLogMode(x=False)
-        self.sp_button.setText('Spectrum')
-        self.sp_button.clicked.connect(lambda : self.fftIR(irfile,srfile))
-        return
-
     def fftIR(self,irfile,srate):
+        self.ir_graphstereo.setVisible(False)
+        self.ir_graphmono.setVisible(False)
+        self.ir_spectro.setVisible(False)
+        self.ir_fft.setVisible(True)
         # get signal & compute FFT
         npoutfile = np.asarray(irfile)
         pad_length = next_power_of_2(next_power_of_2(len(npoutfile)))
@@ -366,22 +379,77 @@ class MainWindow(QMainWindow):
         fft_outfile = np.fft.rfft(h_panned_npoutfile)
         f = np.fft.rfftfreq(pad_length,1/srate)
         
-        self.graphFFT(f,fft_outfile,irfile,srate)
+        pen = pg.mkPen(color = 'r')
+        self.ir_fft.plot(f,smooth(20*np.log10(abs(fft_outfile)),45)-np.max(20*np.log10(abs(fft_outfile))),pen=pen)
+        self.sp_button.setText('Temporal signal')
+        self.sp_button.clicked.connect(lambda : self.replotIRmono())
+
+    def replotIRmono(self):
+        self.ir_fft.setVisible(False)
+        self.ir_graphstereo.setVisible(False)
+        self.ir_spectro.setVisible(False)
+        self.ir_graphmono.setVisible(True)
+
+        self.sp_button.setText('Spectrum')
+        self.sp_button.clicked.connect(lambda : self.replotIRfft())
+        return
+    
+    def replotIRfft(self):
+        self.ir_graphstereo.setVisible(False)
+        self.ir_graphmono.setVisible(False)
+        self.ir_spectro.setVisible(False)
+        self.ir_fft.setVisible(True)
+
+        self.sp_button.setText('Temporal signal')
+        self.sp_button.clicked.connect(lambda : self.replotIRmono())
+
     
     def spectroIR(self,file,srate):
+        self.ir_fft.setVisible(False)
+        self.ir_graphstereo.setVisible(False)
+        self.ir_graphmono.setVisible(False)
+        self.ir_spectro.setVisible(True)
         # spectro de la moyenne des deux canaux
         IR = (np.asarray(file[:,0]) + np.asarray(file[:,1]))/2
-        npoutfile = np.asarray(IR)
-        pad_length = next_power_of_2(next_power_of_2(len(npoutfile)))
-        padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
-        f,t,Sxx = spectrogram(padded_npoutfile,fs=srate,nfft=len(padded_npoutfile)//50,nperseg=len(padded_npoutfile)//400)
+        f,t,Sxx = spectrogram(IR,fs=srate,nfft=len(IR)//50,nperseg=len(IR)//400,scaling='spectrum')
+        Sxx = 20*np.log10(np.matrix.transpose(Sxx))
         img = pg.ImageItem()
-        self.ir_graph.clear()
-        self.ir_graph.addItem(img)
         img.setImage(Sxx)
-        img.scale(t[-1]/np.size(Sxx, axis=1),f[-1]/np.size(Sxx, axis=0))
-        self.ir_graph.setLimits(xMin=0, xMax=t[-1], yMin=0, yMax=f[-1])
-    
+        hist = pg.HistogramLUTItem()
+        hist.setImageItem(img)
+        hist.setLevels(np.min(Sxx), np.max(Sxx))
+        hist.gradient.restoreState(
+        {'mode': 'rgb',
+         'ticks': [(1.0, (253, 231, 36, 255)),
+                   (0.85, (94, 201, 97, 255)),
+                   (0.65, (32, 144, 140, 255)),
+                   (0.47, (58, 82, 139, 255)),
+                   (0.0, (68, 1, 84, 255))]})
+
+        self.ir_spectro.addItem(img)
+        # img.scale(t[-1]/Sxx.shape[0], f[-1]/Sxx.shape[1])
+        self.sp_button.setText('Temporal signal')
+        self.sp_button.clicked.connect(lambda : self.replotIRstereo())
+        return
+
+    def replotIRstereo(self):
+        self.ir_fft.setVisible(False)
+        self.ir_graphmono.setVisible(False)
+        self.ir_spectro.setVisible(False)
+        self.ir_graphstereo.setVisible(True)
+        self.sp_button.setText('Spectrogram')
+        self.sp_button.clicked.connect(lambda : self.replotSpectro())
+        return
+
+    def replotSpectro(self):
+        self.ir_fft.setVisible(False)
+        self.ir_graphstereo.setVisible(False)
+        self.ir_graphmono.setVisible(False)
+        self.ir_spectro.setVisible(True)
+        self.sp_button.setText('Temporal signal')
+        self.sp_button.clicked.connect(lambda : self.replotIRstereo())
+        return
+
     def sweep(self):
         dialog=Sweep_Window(self)
         dialog.show()
