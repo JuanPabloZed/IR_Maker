@@ -10,7 +10,6 @@ sr,data = read('c:\IRs\Test\jsp48.wav')
 onedata = np.asarray(data[:,0]/max(data[:,0]))
 f,t,Sxx = spectrogram(onedata,fs=sr,nfft=len(onedata)//50,nperseg=len(onedata)//400)
 Sxx = 20*np.log10(Sxx)
-
 # Interpret image data as row-major instead of col-major
 pyqtgraph.setConfigOptions(imageAxisOrder='row-major')
 
@@ -44,7 +43,7 @@ hist.gradient.restoreState(
 # Sxx contains the amplitude for each pixel
 img.setImage(Sxx,autoLevels=False,autoRange=False)
 # Scale the X and Y Axis to time and frequency (standard is pixels)
-img.scale(t[-1]/Sxx.shape[0], f[-1]/Sxx.shape[1])
+# img.scale(t[-1]/Sxx.shape[0], f[-1]/Sxx.shape[1])
 # Limit panning/zooming to the spectrogram
 p1.setLimits(xMin=0, xMax=t[-1], yMin=0, yMax=f[-1])
 # Add labels to the axis
