@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
         gen_sweep.clicked.connect(lambda : self.sweep())
         # Create IR
         ir = QPushButton("Create IR",self)
-        ir.setGeometry(220,100,560,30)
+        ir.setGeometry(220,100,560,60)
         ir.clicked.connect(lambda : self.programme(self.sweep_data,self.response_data,self.save_data,begin_freq.text(),end_freq.text(),self.sr.text()))
         # plot
         self.labelgraph = QLabel("Your IR",self)
@@ -402,7 +402,6 @@ class MainWindow(QMainWindow):
 
         self.sp_button.setText('Temporal signal')
         self.sp_button.clicked.connect(lambda : self.replotIRmono())
-
     
     def spectroIR(self,file,srate):
         self.ir_fft.setVisible(False)
