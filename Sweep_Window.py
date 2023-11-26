@@ -84,8 +84,10 @@ class Sweep_Window(QMainWindow):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav", options=options)
-        self.file_save.setText(Path(fileName).name)
+        if fileName[-4:] != '.wav':
+                fileName = fileName + '.wav'
         self.save_data=fileName
+        self.file_save.setText(Path(fileName).name)
         return
     
     def sweepgenerator(self,f1, f2, T, sr, savepath):
@@ -108,7 +110,7 @@ class Sweep_Window(QMainWindow):
         self.x = self.x.astype(np.int16)
         # genertion of the sweep
         
-        write(savepath + '.wav' , sr, self.x) # save the file
+        write(savepath, sr, self.x) # save the file
         self.graph_fct(self.x)
         return
     

@@ -224,6 +224,8 @@ class MainWindow(QMainWindow):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav", options=options)
+        if fileName[-4:] != '.wav':
+                fileName = fileName + '.wav'
         self.save_data=fileName
         self.file_save.setText(Path(fileName).name)
         return
@@ -307,7 +309,7 @@ class MainWindow(QMainWindow):
             normir = np.column_stack((normirL, normirR))
             normir = normir.astype(np.int16)
             # save wav file
-            write(targetname + '.wav', sr, normir)
+            write(targetname, sr, normir)
             return (normir) 
             
         #if recording in mono
