@@ -56,18 +56,18 @@ class MainWindow(QMainWindow):
         labelfreqbeg = QLabel("Begining frequency (Hz)", self)
         labelfreqbeg.setAlignment(Qt.AlignCenter)
         labelfreqbeg.setGeometry(220, 30, 180, 30)
-        begin_freq = QLineEdit(self)
-        begin_freq.setMaxLength(20)
-        begin_freq.setPlaceholderText("Enter value")
-        begin_freq.setGeometry(220, 60, 180, 30)
+        self.begin_freq = QLineEdit(self)
+        self.begin_freq.setPlaceholderText("Enter value")
+        self.begin_freq.setMaxLength(20)
+        self.begin_freq.setGeometry(220, 60, 180, 30)
         #Freq de fin
         labelfreqend = QLabel("Ending frequency (Hz)", self)
         labelfreqend.setAlignment(Qt.AlignCenter)
         labelfreqend.setGeometry(410, 30, 180, 30)
-        end_freq = QLineEdit(self)
-        end_freq.setMaxLength(20)
-        end_freq.setPlaceholderText("Enter value")
-        end_freq.setGeometry(410, 60, 180, 30)
+        self.end_freq = QLineEdit(self)
+        self.end_freq.setMaxLength(20)
+        self.end_freq.setPlaceholderText("Enter value")
+        self.end_freq.setGeometry(410, 60, 180, 30)
         #Sampling rate                             
         labelsr = QLabel("Sampling rate (Hz)", self)
         labelsr.setAlignment(Qt.AlignCenter)
@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
         # Create IR
         ir = QPushButton("Create IR",self)
         ir.setGeometry(220,100,560,60)
-        ir.clicked.connect(lambda : self.programme(self.sweep_data,self.response_data,self.save_data,begin_freq.text(),end_freq.text(),self.sr.text()))
+        ir.clicked.connect(lambda : self.programme(self.sweep_data,self.response_data,self.save_data,self.begin_freq.text(),self.end_freq.text(),self.sr.text()))
         # plot
         self.labelgraph = QLabel("Your IR",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
@@ -141,7 +141,7 @@ class MainWindow(QMainWindow):
             aymono = self.ir_graphmono.getAxis('left')
             yticksmono = [(0,'Mono')]
             aymono.setTicks([yticksmono])
-
+            self.ir_graphmono.setXRange(0,t[-1])
             self.ir_graphmono.showGrid(x=True, y=True)
             return
         
@@ -171,7 +171,7 @@ class MainWindow(QMainWindow):
             aystereo = self.ir_graphstereo.getAxis('left')
             yticksstereo = [(0,'Right'),(2.2,'Left')]
             aystereo.setTicks([yticksstereo])
-
+            self.ir_graphstereo.setXRange(0,t[-1])
             self.ir_graphstereo.showGrid(x=True, y=True)
             return 
         
@@ -381,6 +381,7 @@ class MainWindow(QMainWindow):
         
         pen = pg.mkPen(color = 'r')
         self.ir_fft.plot(f,smooth(20*np.log10(abs(fft_outfile)),45)-np.max(20*np.log10(abs(fft_outfile))),pen=pen)
+        self.ir_fft.setXRange(np.log10(int(self.begin_freq.text())),np.log10(int(self.end_freq.text())))
         self.sp_button.setText('Temporal signal')
         self.sp_button.clicked.connect(lambda : self.replotIRmono())
 
@@ -414,6 +415,10 @@ class MainWindow(QMainWindow):
         Sxx = 20*np.log10(np.matrix.transpose(Sxx))
         img = pg.ImageItem()
         img.setImage(Sxx)
+        tr = pg.Qt.QtGui.QTransform()
+        tr.scale(t[-1] / np.size(Sxx, axis=0), f[-1] / np.size(Sxx, axis=1))  
+        img.setTransform(tr)
+        self.ir_spectro.setLimits(xMin=0, xMax=t[-1], yMin=f[0], yMax=f[-1])
         hist = pg.HistogramLUTItem()
         hist.setImageItem(img)
         hist.setLevels(np.min(Sxx), np.max(Sxx))
@@ -424,9 +429,8 @@ class MainWindow(QMainWindow):
                    (0.65, (32, 144, 140, 255)),
                    (0.47, (58, 82, 139, 255)),
                    (0.0, (68, 1, 84, 255))]})
-
         self.ir_spectro.addItem(img)
-        # img.scale(t[-1]/Sxx.shape[0], f[-1]/Sxx.shape[1])
+        self.ir_spectro.showGrid(x=True,y=True)
         self.sp_button.setText('Temporal signal')
         self.sp_button.clicked.connect(lambda : self.replotIRstereo())
         return

@@ -41,7 +41,10 @@ hist.gradient.restoreState(
                    (0.47, (58, 82, 139, 255)),
                    (0.0, (68, 1, 84, 255))]})
 # Sxx contains the amplitude for each pixel
-img.setImage(Sxx,autoLevels=False,autoRange=False)
+img.setImage(Sxx)
+tr = pyqtgraph.Qt.QtGui.QTransform()
+tr.scale(t[-1] / np.size(Sxx, axis=1), f[-1] / np.size(Sxx, axis=0))  
+img.setTransform(tr)
 # Scale the X and Y Axis to time and frequency (standard is pixels)
 # img.scale(t[-1]/Sxx.shape[0], f[-1]/Sxx.shape[1])
 # Limit panning/zooming to the spectrogram

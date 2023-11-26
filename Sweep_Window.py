@@ -129,9 +129,13 @@ class Sweep_Window(QMainWindow):
         self.spectro_sweep.setVisible(True)
         npoutfile = np.asarray(x)
         f,t,Sxx = spectrogram(npoutfile,fs=fs,nfft=len(npoutfile)//50,nperseg=len(npoutfile)//400)
-        Sxx = np.matrix.transpose(Sxx)
+        Sxx = 20*np.log10(np.matrix.transpose(Sxx))
         img = pg.ImageItem()
         img.setImage(Sxx)
+        tr = pg.Qt.QtGui.QTransform()
+        tr.scale(t[-1] / np.size(Sxx, axis=0), f[-1] / np.size(Sxx, axis=1))  
+        img.setTransform(tr)
+        self.spectro_sweep.setLimits(xMin=0, xMax=t[-1], yMin=f[0], yMax=f[-1])
         hist = pg.HistogramLUTItem()
         hist.setImageItem(img)
         hist.setLevels(np.min(Sxx), np.max(Sxx))
@@ -142,8 +146,8 @@ class Sweep_Window(QMainWindow):
                    (0.65, (32, 144, 140, 255)),
                    (0.47, (58, 82, 139, 255)),
                    (0.0, (68, 1, 84, 255))]})
-
         self.spectro_sweep.addItem(img)
+        self.spectro_sweep.showGrid(x=True,y=True)
         self.spectro_button.setText('Temporal signal')
         self.spectro_button.clicked.connect(lambda : self.replotSweep())
         return
