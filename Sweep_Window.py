@@ -1,6 +1,5 @@
 import numpy as np
 from pathlib import Path
-import matplotlib.pyplot as plt
 from scipy.io.wavfile import write
 from scipy.signal import spectrogram
 from PyQt5.QtWidgets import *
