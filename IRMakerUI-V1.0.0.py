@@ -10,110 +10,115 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import pyqtgraph as pg
 from Sweep_Window import Sweep_Window
+from funcs import next_power_of_2, smooth
 import sys
 
-
+Version = "V1.0.0"
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        self.setWindowTitle("Ir Maker")
-        MainWindow.resize(self, 1000, 730)
+        self.setWindowTitle("IR Maker")
+        MainWindow.resize(self, 1500, 730)
         #Creator Info
         labelcreator=QLabel("IR Maker® Developped by Nathan Zwahlen, Benjamin Quiédeville & Hugo Perrier.",self)
-        labelcreator.setGeometry(490,700,500,15)
+        labelcreator.setGeometry(990,700,500,15)
         labelcreator.setAlignment(Qt.AlignRight)
-        labelversion=QLabel("V1.0.0",self)
-        labelversion.setGeometry(490,715,500,15)
+        labelversion=QLabel(Version,self)
+        labelversion.setGeometry(990,715,500,15)
         labelversion.setAlignment(Qt.AlignRight)
+        # Nom du soft
+        labelsoft = QLabel("IR Maker",self)
+        labelsoft.setGeometry(0,2,1500,30)
+        labelsoft.setAlignment(Qt.AlignCenter)
+        labelsoft.setFont(QFont("Courrier New", 20, QFont.Bold))
         #Choix du fichier du sweep
         labelsweep = QLabel("Select sweep file", self)
         labelsweep.setAlignment(Qt.AlignCenter)
-        labelsweep.setGeometry(30, 30, 180, 30)
+        labelsweep.setGeometry(145, 15, 180, 30)
         self.file_sweep=QPushButton("Select file",self)
-        self.file_sweep.setGeometry(30, 60, 180, 30)
+        self.file_sweep.setGeometry(145, 45, 180, 30)
         self.sweep_data=' '
         self.file_sweep.clicked.connect(lambda : self.openFileSweep())
-        
         #Choix du deuxième fichier 
         labelresp = QLabel("Select response file", self)
         labelresp.setAlignment(Qt.AlignCenter)
-        labelresp.setGeometry(30, 100, 180, 30)
+        labelresp.setGeometry(145, 100, 180, 30)
         self.file_response = QPushButton("Select file",self)
-        self.file_response.setGeometry(30, 130, 180, 30)
+        self.file_response.setGeometry(145, 130, 180, 30)
         self.response_data=' '
         self.file_response.clicked.connect(lambda: self.openFileResponse())
         #Choix fichier de save
         labelsave = QLabel("Select saving location", self)
         labelsave.setAlignment(Qt.AlignCenter)
-        labelsave.setGeometry(30, 170, 180, 30)
+        labelsave.setGeometry(145, 185, 180, 30)
         self.file_save = QPushButton("Saving location",self)
-        self.file_save.setGeometry(30, 200, 180, 30)
+        self.file_save.setGeometry(145, 215, 180, 30)
         self.save_data=' '
         self.file_save.clicked.connect(lambda: self.saveFileDialog())
         #Freq de début
         labelfreqbeg = QLabel("Begining frequency (Hz)", self)
         labelfreqbeg.setAlignment(Qt.AlignCenter)
-        labelfreqbeg.setGeometry(220, 30, 180, 30)
+        labelfreqbeg.setGeometry(470, 30, 180, 30)
         self.begin_freq = QLineEdit(self)
         self.begin_freq.setPlaceholderText("Enter value")
         self.begin_freq.setMaxLength(20)
-        self.begin_freq.setGeometry(220, 60, 180, 30)
+        self.begin_freq.setGeometry(470, 60, 180, 30)
         #Freq de fin
         labelfreqend = QLabel("Ending frequency (Hz)", self)
         labelfreqend.setAlignment(Qt.AlignCenter)
-        labelfreqend.setGeometry(410, 30, 180, 30)
+        labelfreqend.setGeometry(660, 30, 180, 30)
         self.end_freq = QLineEdit(self)
         self.end_freq.setMaxLength(20)
         self.end_freq.setPlaceholderText("Enter value")
-        self.end_freq.setGeometry(410, 60, 180, 30)
+        self.end_freq.setGeometry(660, 60, 180, 30)
         #Sampling rate                             
         labelsr = QLabel("Sampling rate (Hz)", self)
         labelsr.setAlignment(Qt.AlignCenter)
-        labelsr.setGeometry(600, 30, 180, 30)
+        labelsr.setGeometry(850, 30, 180, 30)
         self.sr = QLineEdit(self)
         self.sr.setMaxLength(20)
         self.sr.setPlaceholderText("Enter value")
-        self.sr.setGeometry(600, 60, 180, 30)
+        self.sr.setGeometry(850, 60, 180, 30)
         #Génération du sweep 
         gen_sweep = QPushButton("Sweep generator",self)
-        gen_sweep.setGeometry(800, 60, 180, 70)
+        gen_sweep.setGeometry(1155, 80, 220, 80)
         gen_sweep.clicked.connect(lambda : self.sweep())
         # Create IR
         ir = QPushButton("Create IR",self)
-        ir.setGeometry(220,100,560,60)
+        ir.setGeometry(470,100,560,60)
         ir.clicked.connect(lambda : self.programme(self.sweep_data,self.response_data,self.save_data,self.begin_freq.text(),self.end_freq.text(),self.sr.text()))
         # plot
         self.labelgraph = QLabel("Your IR",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
-        self.labelgraph.setGeometry(30,250,940,30)
+        self.labelgraph.setGeometry(280,250,940,30)
         # plot mono
         self.ir_graphmono=pg.PlotWidget(self)
-        self.ir_graphmono.setGeometry(30, 280, 940, 400)
+        self.ir_graphmono.setGeometry(30, 280, 1440, 400)
         self.ir_graphmono.setLabel('bottom', 'Time (s)')
         self.ir_graphmono.setLabel('left', 'Amplitude')
         self.ir_graphmono.setBackground('w')
         # plot stereo
         self.ir_graphstereo=pg.PlotWidget(self)
-        self.ir_graphstereo.setGeometry(30, 280, 940, 400)
+        self.ir_graphstereo.setGeometry(30, 280, 1440, 400)
         self.ir_graphstereo.setLabel('bottom', 'Time (s)')
         self.ir_graphstereo.setLabel('left', 'Amplitude')
         self.ir_graphstereo.setBackground('w')
         self.ir_graphstereo.setVisible(False)
         # Bouton spectro/fft
         self.sp_button = QPushButton('Spectro ou FFT',self)
-        self.sp_button.setGeometry(800,180,180,70)
+        self.sp_button.setGeometry(470,170,560,60)
         self.sp_button.setVisible(False)
         # spectro
         self.ir_spectro=pg.PlotWidget(self)
-        self.ir_spectro.setGeometry(30, 280, 940, 400)
+        self.ir_spectro.setGeometry(30, 280, 1440, 400)
         self.ir_spectro.setVisible(False)
         self.ir_spectro.setLabel('bottom','Time (s)')
         self.ir_spectro.setLabel('left','Frequency (Hz)')
         self.ir_spectro.setBackground('w')
         # FFT
         self.ir_fft=pg.PlotWidget(self)
-        self.ir_fft.setGeometry(30, 280, 940, 400)
+        self.ir_fft.setGeometry(30, 280, 1440, 400)
         self.ir_fft.setLabel('bottom','Frequency (Hz)')
         self.ir_fft.setLabel('left','Amplitude (dB)')
         self.ir_fft.setBackground('w')
@@ -458,13 +463,13 @@ class MainWindow(QMainWindow):
         dialog=Sweep_Window(self)
         dialog.show()
 
-def next_power_of_2(n):
-    return 1 << (int(np.log2(n - 1)) + 1)
+# def next_power_of_2(n):
+#     return 1 << (int(np.log2(n - 1)) + 1)
 
-def smooth(y, box_pts):
-    box = np.ones(box_pts)/box_pts
-    y_smooth = np.convolve(y, box, mode='same')
-    return y_smooth
+# def smooth(y, box_pts):
+#     box = np.ones(box_pts)/box_pts
+#     y_smooth = np.convolve(y, box, mode='same')
+#     return y_smooth
 # main
 # sweeppath = "C:\IRs\Test\Sweeps\Sweep20to20k-44,1k-10sec.wav"
 # recordpath = "C:\IRs\Test\Réponses réelles\Test Chainsaw 12 EQed.wav"
