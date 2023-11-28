@@ -1,9 +1,7 @@
-from scipy import signal
 from scipy.io.wavfile import read
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
-from matplotlib.ticker import AutoMinorLocator as aml
 import numpy as np
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
