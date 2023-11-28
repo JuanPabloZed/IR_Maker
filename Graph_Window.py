@@ -3,17 +3,17 @@ from scipy.io.wavfile import read
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT
 from matplotlib.figure import Figure
+from matplotlib.ticker import AutoMinorLocator as aml
 import numpy as np
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-import pyqtgraph
 import sys
 from funcs import *
 
 # def next_power_of_2(n):
 #     return 1 << (int(np.log2(n - 1)) + 1)
-mode = 'spectro'
+mode = 'fft'
 
 class MplCanvas(FigureCanvasQTAgg):
 
@@ -22,12 +22,19 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes = self.fig.add_subplot(111)
         super(MplCanvas, self).__init__(self.fig)
 
+class Graph(QWidget):
+    def __init__(self,parent=None):
+        self.fig = Figure()
+
 class GraphWindow(QMainWindow):
     def __init__(self, parent=None):
-        super(GraphWindow,self).__init__(parent)
-        self.setWindowTitle('Test')
-        # GraphWindow.resize(self,1000,460)
-        sc = MplCanvas(self, width=15, height=6, dpi=100)
+        super().__init__(parent)
+        self.setWindowTitle('IR Graphs')
+        # GraphWindow.resize(self,1560,1060)
+        # self.graph = Graph(self)
+        # self.graph.setGeometry(30,30,1500,1000)
+
+        sc = MplCanvas(self,width=15,height=10,dpi=100)
 
         # self.graph = pyqtgraph.PlotWidget(self)
         # self.graph.setGeometry(30,30,940,400)
@@ -77,8 +84,6 @@ class GraphWindow(QMainWindow):
             canvas.axes.set_xlim(20,22000)
             canvas.axes.set_ylim(limmin,limmax)
             canvas.fig.tight_layout()
-            
-            
         
         # spectro
         elif mode == 'spectro':
@@ -90,12 +95,13 @@ class GraphWindow(QMainWindow):
                                  NFFT=len(onedata)//100,
                                  noverlap=len(onedata)//170,
                                  scale='dB') 
-            canvas.axes.grid(which='both',alpha=1)
+            canvas.axes.grid(which='major',alpha=1)
+            canvas.axes.grid(which='minor',alpha=0.75)
             canvas.axes.set_yscale('symlog')
             canvas.axes.set_yticks(majfticks_fft,minor=False)
             canvas.axes.set_yticks(minfticks_fft,minor=True)
-            canvas.axes.set_yticklabels(majfticks_fft,minor=False,fontsize=7)
-            canvas.axes.set_yticklabels(minfticks_fft,minor=True,fontsize=7)
+            canvas.axes.set_yticklabels(majfticks_fft,minor=False,fontsize=7,rotation=20)
+            canvas.axes.set_yticklabels(minfticks_fft,minor=True,fontsize=7,rotation=20)
             canvas.axes.set_ylim(20,22000)
             canvas.axes.set_title('Spectrogram')
             canvas.axes.set_xlabel('Time (s)')
