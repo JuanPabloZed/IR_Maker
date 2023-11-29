@@ -387,7 +387,7 @@ class MainWindow(QMainWindow):
         
         pen = pg.mkPen(color = 'r')
         self.ir_fft.plot(f,smooth(20*np.log10(abs(fft_outfile)),45)-np.max(20*np.log10(abs(fft_outfile))),pen=pen)
-        self.ir_fft.setXRange(np.log10(int(self.begin_freq.text())),np.log10(int(self.end_freq.text())))
+        self.ir_fft.setXRange(np.log10(float(self.begin_freq.text())),np.log10(float(self.end_freq.text())))
         self.sp_button.setText('Temporal signal')
         self.sp_button.clicked.connect(lambda : self.replotIRmono())
 
@@ -437,6 +437,7 @@ class MainWindow(QMainWindow):
                    (0.0, (68, 1, 84, 255))]})
         self.ir_spectro.addItem(img)
         self.ir_spectro.showGrid(x=True,y=True)
+        self.ir_spectro.setYRange(int(self.begin_freq.text()),int(self.end_freq.text()))
         self.sp_button.setText('Temporal signal')
         self.sp_button.clicked.connect(lambda : self.replotIRstereo())
         return
@@ -463,17 +464,6 @@ class MainWindow(QMainWindow):
         dialog=Sweep_Window(self)
         dialog.show()
 
-# def next_power_of_2(n):
-#     return 1 << (int(np.log2(n - 1)) + 1)
-
-# def smooth(y, box_pts):
-#     box = np.ones(box_pts)/box_pts
-#     y_smooth = np.convolve(y, box, mode='same')
-#     return y_smooth
-# main
-# sweeppath = "C:\IRs\Test\Sweeps\Sweep20to20k-44,1k-10sec.wav"
-# recordpath = "C:\IRs\Test\Réponses réelles\Test Chainsaw 12 EQed.wav"
-# targetname = "C:\IRs\Cabs\Homemade\Test Chainsaw 12 EQed.wav"
 def main():
     app = QApplication(sys.argv)
     main = MainWindow()

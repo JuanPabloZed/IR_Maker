@@ -8,7 +8,9 @@ from scipy.signal import convolve, spectrogram
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-import pyqtgraph as pg
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
 from Sweep_Window import Sweep_Window
 from funcs import next_power_of_2, smooth
 import sys
@@ -92,50 +94,24 @@ class MainWindow(QMainWindow):
         self.labelgraph = QLabel("Your IR",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
         self.labelgraph.setGeometry(280,250,940,30)
-        # plot mono
-        self.ir_graphmono=pg.PlotWidget(self)
-        self.ir_graphmono.setGeometry(30, 280, 1440, 400)
-        self.ir_graphmono.setLabel('bottom', 'Time (s)')
-        self.ir_graphmono.setLabel('left', 'Amplitude')
-        self.ir_graphmono.setBackground('w')
-        # plot stereo
-        self.ir_graphstereo=pg.PlotWidget(self)
-        self.ir_graphstereo.setGeometry(30, 280, 1440, 400)
-        self.ir_graphstereo.setLabel('bottom', 'Time (s)')
-        self.ir_graphstereo.setLabel('left', 'Amplitude')
-        self.ir_graphstereo.setBackground('w')
-        self.ir_graphstereo.setVisible(False)
         # Bouton spectro/fft
         self.sp_button = QPushButton('Spectro ou FFT',self)
         self.sp_button.setGeometry(470,170,560,60)
         self.sp_button.setVisible(False)
-        # spectro
-        self.ir_spectro=pg.PlotWidget(self)
-        self.ir_spectro.setGeometry(30, 280, 1440, 400)
-        self.ir_spectro.setVisible(False)
-        self.ir_spectro.setLabel('bottom','Time (s)')
-        self.ir_spectro.setLabel('left','Frequency (Hz)')
-        self.ir_spectro.setBackground('w')
-        # FFT
-        self.ir_fft=pg.PlotWidget(self)
-        self.ir_fft.setGeometry(30, 280, 1440, 400)
-        self.ir_fft.setLabel('bottom','Frequency (Hz)')
-        self.ir_fft.setLabel('left','Amplitude (dB)')
-        self.ir_fft.setBackground('w')
-        self.ir_fft.setLogMode(x=True)
-        self.ir_fft.showGrid(x=True,y=True)
-        self.ir_fft.setVisible(False)
+        # plots widget
+        self.graphs = Graphs(self)
+        self.graphs.setGeometry(30, 280, 1440, 400)
 
     def graphIR(self, data):
         if data.ndim == 1:
-            self.ir_spectro.setVisible(False)
-            self.ir_fft.setVisible(False)
-            self.ir_graphstereo.setVisible(False)
-            self.ir_graphmono.setVisible(True)
+            
             i=-1
             while abs(data[i]) <= 0.00002:
                 i -= 1
             data_mono = data[0:i]
+            i=0
+            while abs(data[i]) <= 0.00002:
+                i -= 1
             normdata_mono = data_mono/np.max(abs(data))
             t = [x/int(self.sr.text()) for x in range(len(data_mono))]
             self.ir_graphmono.clear()
@@ -463,17 +439,18 @@ class MainWindow(QMainWindow):
         dialog=Sweep_Window(self)
         dialog.show()
 
-# def next_power_of_2(n):
-#     return 1 << (int(np.log2(n - 1)) + 1)
+class Graphs(QWidget):
+    def __init__(self,parent=None):
+        super().__init__(parent)
+        self.fig = Figure()
+        self.canvas = FigureCanvas(self.fig)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        layout = QVBoxLayout()
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
 
-# def smooth(y, box_pts):
-#     box = np.ones(box_pts)/box_pts
-#     y_smooth = np.convolve(y, box, mode='same')
-#     return y_smooth
-# main
-# sweeppath = "C:\IRs\Test\Sweeps\Sweep20to20k-44,1k-10sec.wav"
-# recordpath = "C:\IRs\Test\Réponses réelles\Test Chainsaw 12 EQed.wav"
-# targetname = "C:\IRs\Cabs\Homemade\Test Chainsaw 12 EQed.wav"
+
 def main():
     app = QApplication(sys.argv)
     main = MainWindow()

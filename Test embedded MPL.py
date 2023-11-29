@@ -48,7 +48,7 @@ class Window(QtWidgets.QWidget):
         ax.plot(data, '-')
 
         # plot decoration
-        ax.set_title()
+        ax.set_title('Graph')
 
         self.figure.tight_layout()
         # refresh canvas
