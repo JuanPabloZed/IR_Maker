@@ -56,7 +56,7 @@ class Sweep_Window(QMainWindow):
         # Generate sweep
         gen_sweep = QPushButton("Generate ESS",self)
         gen_sweep.setGeometry(220,100,570,60)       
-        gen_sweep.clicked.connect(lambda : self.sweep(self.begin_freq.text(), self.end_freq.text(),self.sr.text(),self.T.text(),self.save_data))
+        gen_sweep.clicked.connect(lambda : self.sweep(self.begin_freq.text(), self.end_freq.text(),self.sr.text(),self.T.text()))
         # plot
         self.labelgraph = QLabel("Your ESS",self)
         self.labelgraph.setAlignment(Qt.AlignCenter)
@@ -93,7 +93,7 @@ class Sweep_Window(QMainWindow):
         self.file_save.setText(Path(fileName).name)
         return
     
-    def sweepgenerator(self,f1, f2, T, sr, savepath):
+    def sweepgenerator(self,f1, f2, T, sr):
         """
         Generates an Exponential Sine Sweep (ESS) and saves it in a .wav file.
         -----
@@ -111,24 +111,22 @@ class Sweep_Window(QMainWindow):
         time = np.array([i/sr for i in range(T*sr)]) # time array for the graph
         self.x = 0.75*np.array([np.sin(2*np.pi*f1*T/R*(np.exp(t/sr*R/T)-1)) for t in range(T*sr)])*32767
         self.x = self.x.astype(np.int16)
-        # genertion of the sweep
-        
-        write(savepath, sr, self.x) # save the file
-        self.graph_fct(self.x)
         return
     
-    def sweep(self,beg_f,end_f,sr,T,save_data):
+    def sweep(self,beg_f,end_f,sr,T):
         # sweep parameters
         f1 = float(beg_f)
         f2 = float(end_f)
         sr = int(sr)
         T = int(T)
         # sweep generation
-        self.sweepgenerator(f1, f2, T, sr, save_data)
+        self.sweepgenerator(f1, f2, T, sr)
+        write(self.save_data, sr, self.x)
+        self.graph_fct(self.x)
         self.spectro_button.setVisible(True)
         self.spectro_button.clicked.connect(lambda : self.Spectrogram(self.x,int(self.sr.text())))
         self.play_sweep.setVisible(True)
-        self.play_sweep.clicked.connect(lambda : QSound.play(save_data))
+        self.play_sweep.clicked.connect(lambda : QSound.play(self.save_data))
         return
 
     def Spectrogram(self,x,fs):
