@@ -84,8 +84,8 @@ class Sweep_Window(QMainWindow):
         self.spectro_sweep.setVisible(False)
 
     def player(self,url):
-         sound = QSound(url)
-         sound.play()
+         self.sound = QSound(url)
+         self.sound.play()
 
     def saveSweepDialog(self):
         options = QFileDialog.Options()
@@ -113,7 +113,7 @@ class Sweep_Window(QMainWindow):
         """
         R = np.log(f2/f1)   # sweep rate
         time = np.array([i/sr for i in range(T*sr)]) # time array for the graph
-        self.x = np.array([np.sin(2*np.pi*f1*T/R*(np.exp(t/sr*R/T)-1)) for t in range(T*sr)])*32767
+        self.x = 0.75*np.array([np.sin(2*np.pi*f1*T/R*(np.exp(t/sr*R/T)-1)) for t in range(T*sr)])*32767
         self.x = self.x.astype(np.int16)
         # genertion of the sweep
         

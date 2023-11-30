@@ -12,8 +12,6 @@ from PyQt5.QtMultimedia import QSound
 import pyqtgraph as pg
 from Sweep_Window import Sweep_Window
 from funcs import next_power_of_2, smooth
-import pyaudio
-import wave
 import sys
 
 Version = "V1.0.0"
@@ -244,7 +242,7 @@ class MainWindow(QMainWindow):
     def normalize(self,values):
         return values / np.max(values)
     
-    def deconvolver(self,sweeppath, recordpath, targetname,f1, f2, sr):
+    def deconvolver(self, sweeppath, recordpath, f1, f2):
         """
         Calulates the IR of a system in which the sine sweep contained in sweeppath has been emitted.
         Uses theoretical inverse convolution of an Exponential Sine Sweep (ESS) to compute the IR.
@@ -262,7 +260,7 @@ class MainWindow(QMainWindow):
             - ir (or irL & irR if stereo output), the ndarray containing the IR
         """
         # load files
-        rateout, outfile = read(recordpath, mmap=False)
+        _, outfile = read(recordpath, mmap=False)
     
         # sweep read
         ress, ess1 = read(sweeppath)
@@ -363,7 +361,7 @@ class MainWindow(QMainWindow):
         f1 = float(begin_freq)
         f2 = float(end_freq)
         sr = int(sr)
-        ir = self.deconvolver(sweeppath, recordpath, targetname, f1, f2, sr)
+        ir = self.deconvolver(sweeppath, recordpath, f1, f2)
         write(targetname, sr, ir)
         # output depending of the format in mode
             # if stereo
