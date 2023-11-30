@@ -408,17 +408,23 @@ class MainWindow(QMainWindow):
         self.ir_fft.plot(f,fft_toplot,fillLevel=1.15*np.min(fft_toplot),brush=brush,pen=pen)
         self.ir_fft.setXRange(np.log10(f[0]),np.log10(f[-1]))
         self.sp_button.setText('Temporal signal')
-        self.sp_button.clicked.connect(lambda : self.replotIRmono())
+        self.sp_button.clicked.connect(lambda : self.replotIRmono('temporal'))
         return
 
-    def replotIRmono(self):
-        self.ir_fft.setVisible(False)
-        self.ir_graphmono.setVisible(True)
-
-        self.sp_button.setText('Spectrum')
-        self.sp_button.clicked.connect(lambda : self.replotIRfft())
+    def replotIRmono(self,mode):
+        if mode == 'temporal':
+            self.ir_fft.setVisible(False)
+            self.ir_graphmono.setVisible(True)
+            self.sp_button.setText('Spectrum')
+            self.sp_button.clicked.connect(lambda : self.replotIRmono('fft'))
+       
+        elif mode == 'fft':
+            self.ir_graphmono.setVisible(False)
+            self.ir_fft.setVisible(True)
+            self.sp_button.setText('Temporal signal')
+            self.sp_button.clicked.connect(lambda : self.replotIRmono('temporal'))
         return
-    
+        
     def replotIRfft(self):
         self.ir_graphmono.setVisible(False)
         self.ir_fft.setVisible(True)
