@@ -83,10 +83,6 @@ class Sweep_Window(QMainWindow):
         self.spectro_sweep.setBackground('w')
         self.spectro_sweep.setVisible(False)
 
-    def player(self,url):
-         self.sound = QSound(url)
-         self.sound.play()
-
     def saveSweepDialog(self):
         options = QFileDialog.Options()
        # options |= QFileDialog.DontUseNativeDialog
@@ -132,7 +128,7 @@ class Sweep_Window(QMainWindow):
         self.spectro_button.setVisible(True)
         self.spectro_button.clicked.connect(lambda : self.Spectrogram(self.x,int(self.sr.text())))
         self.play_sweep.setVisible(True)
-        self.play_sweep.clicked.connect(lambda : self.player(save_data))
+        self.play_sweep.clicked.connect(lambda : QSound.play(save_data))
         return
 
     def Spectrogram(self,x,fs):

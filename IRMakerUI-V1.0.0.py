@@ -131,10 +131,10 @@ class MainWindow(QMainWindow):
         self.ir_fft.showGrid(x=True,y=True)
         self.ir_fft.setVisible(False)
 
-    def sound_player(self,url):
-        self.sound = QSound(url)
-        self.sound.play()
-        return
+    # def sound_player(self,url):
+    #     self.sound = QSound(url)
+    #     self.sound.play()
+    #     return
 
     def graphIR(self, data):
         if data.ndim == 1:
@@ -380,7 +380,7 @@ class MainWindow(QMainWindow):
             self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
             
         self.play_button.setVisible(True)
-        self.play_button.clicked.connect(lambda : self.sound_player(targetname))
+        self.play_button.clicked.connect(lambda : QSound.play(save_data))
         return
     
     def fftIR(self,irfile,srate):
