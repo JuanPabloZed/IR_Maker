@@ -409,11 +409,10 @@ class MainWindow(QMainWindow):
         self.ir_fft.setXRange(np.log10(f[0]),np.log10(f[-1]))
         self.sp_button.setText('Temporal signal')
         self.sp_button.clicked.connect(lambda : self.replotIRmono())
+        return
 
     def replotIRmono(self):
         self.ir_fft.setVisible(False)
-        self.ir_graphstereo.setVisible(False)
-        self.ir_spectro.setVisible(False)
         self.ir_graphmono.setVisible(True)
 
         self.sp_button.setText('Spectrum')
@@ -421,13 +420,12 @@ class MainWindow(QMainWindow):
         return
     
     def replotIRfft(self):
-        self.ir_graphstereo.setVisible(False)
         self.ir_graphmono.setVisible(False)
-        self.ir_spectro.setVisible(False)
         self.ir_fft.setVisible(True)
 
         self.sp_button.setText('Temporal signal')
         self.sp_button.clicked.connect(lambda : self.replotIRmono())
+        return
     
     def spectroIR(self,file,srate):
         self.ir_fft.setVisible(False)
@@ -482,6 +480,7 @@ class MainWindow(QMainWindow):
     def sweep(self):
         dialog=Sweep_Window(self)
         dialog.show()
+        return
 
 def main():
     app = QApplication(sys.argv)
