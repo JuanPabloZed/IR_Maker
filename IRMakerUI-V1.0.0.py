@@ -8,7 +8,7 @@ from scipy.signal import convolve, spectrogram
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.QtMultimedia import QSound 
+from PyQt5.QtMultimedia import QSound
 import pyqtgraph as pg
 from Sweep_Window import Sweep_Window
 from funcs import next_power_of_2, smooth
@@ -130,11 +130,6 @@ class MainWindow(QMainWindow):
         self.ir_fft.setLogMode(x=True)
         self.ir_fft.showGrid(x=True,y=True)
         self.ir_fft.setVisible(False)
-
-    # def sound_player(self,url):
-    #     self.sound = QSound(url)
-    #     self.sound.play()
-    #     return
 
     def graphIR(self, data):
         if data.ndim == 1:
@@ -395,12 +390,23 @@ class MainWindow(QMainWindow):
         h_panned_npoutfile = padded_npoutfile*np.blackman(pad_length)
         # fft_outfile = np.fft.rfft(h_panned_npoutfile)
         fft_outfile = np.fft.rfft(h_panned_npoutfile)
+        fft_toplot = smooth(20*np.log10(abs(fft_outfile)),45)-np.max(20*np.log10(abs(fft_outfile)))
         f = np.fft.rfftfreq(pad_length,1/srate)
-        
+        i=0
+        j=-1
+        while f[i]<float(self.begin_freq.text()):
+            i += 1
+        while f[j]>float(self.end_freq.text()):
+            j -= 1
+        f = f[i:j]
+        fft_toplot = fft_toplot[i:j]
+
         pen = pg.mkPen(color = 'r')
+        brush = pg.mkBrush(color=(255,150,150))
+
         self.ir_fft.clear()
-        self.ir_fft.plot(f,smooth(20*np.log10(abs(fft_outfile)),45)-np.max(20*np.log10(abs(fft_outfile))),pen=pen)
-        self.ir_fft.setXRange(np.log10(float(self.begin_freq.text())),np.log10(float(self.end_freq.text())))
+        self.ir_fft.plot(f,fft_toplot,fillLevel=1.15*np.min(fft_toplot),brush=brush,pen=pen)
+        self.ir_fft.setXRange(np.log10(f[0]),np.log10(f[-1]))
         self.sp_button.setText('Temporal signal')
         self.sp_button.clicked.connect(lambda : self.replotIRmono())
 
