@@ -5,6 +5,7 @@ from scipy.signal import spectrogram
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtMultimedia import QSound
 import pyqtgraph as pg
 
 class Sweep_Window(QMainWindow):
@@ -67,10 +68,13 @@ class Sweep_Window(QMainWindow):
         self.graph.setBackground('w')
         # switch spectrogramme/temporel
         self.spectro_button=QPushButton("Spectrogram of your ESS",self)
-        self.spectro_button.setGeometry(220,160,570,60)
+        self.spectro_button.setGeometry(220,160,285,60)
         self.spectro_button.setVisible(False)
         self.x=0
-        self.spectro_button.clicked.connect(lambda : self.Spectrogram(self.x,int(self.sr.text())))
+        # player button
+        self.play_sweep = QPushButton('Play the ESS',self)
+        self.play_sweep.setGeometry(505,160,285,60)
+        self.play_sweep.setVisible(False)
         # spectro
         self.spectro_sweep=pg.PlotWidget(self)
         self.spectro_sweep.setGeometry(30, 250, 940, 420)
@@ -79,10 +83,14 @@ class Sweep_Window(QMainWindow):
         self.spectro_sweep.setBackground('w')
         self.spectro_sweep.setVisible(False)
 
+    def player(self,url):
+         sound = QSound(url)
+         sound.play()
+
     def saveSweepDialog(self):
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav", options=options)
+       # options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav")#, options=options)
         if fileName[-4:] != '.wav':
                 fileName = fileName + '.wav'
         self.save_data=fileName
@@ -119,10 +127,12 @@ class Sweep_Window(QMainWindow):
         f2 = float(end_f)
         sr = int(sr)
         T = int(T)
-        savepath = save_data
         # sweep generation
-        self.sweepgenerator(f1, f2, T, sr, savepath)
+        self.sweepgenerator(f1, f2, T, sr, save_data)
         self.spectro_button.setVisible(True)
+        self.spectro_button.clicked.connect(lambda : self.Spectrogram(self.x,int(self.sr.text())))
+        self.play_sweep.setVisible(True)
+        self.play_sweep.clicked.connect(lambda : self.player(save_data))
         return
 
     def Spectrogram(self,x,fs):

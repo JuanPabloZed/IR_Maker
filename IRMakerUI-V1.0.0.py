@@ -8,9 +8,12 @@ from scipy.signal import convolve, spectrogram
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtMultimedia import QSound 
 import pyqtgraph as pg
 from Sweep_Window import Sweep_Window
 from funcs import next_power_of_2, smooth
+import pyaudio
+import wave
 import sys
 
 Version = "V1.0.0"
@@ -95,36 +98,45 @@ class MainWindow(QMainWindow):
         # plot mono
         self.ir_graphmono=pg.PlotWidget(self)
         self.ir_graphmono.setGeometry(30, 280, 1440, 400)
-        self.ir_graphmono.setLabel('bottom', 'Time (s)')
+        self.ir_graphmono.setLabel('bottom', 'Time',units='s')
         self.ir_graphmono.setLabel('left', 'Amplitude')
         self.ir_graphmono.setBackground('w')
         # plot stereo
         self.ir_graphstereo=pg.PlotWidget(self)
         self.ir_graphstereo.setGeometry(30, 280, 1440, 400)
-        self.ir_graphstereo.setLabel('bottom', 'Time (s)')
+        self.ir_graphstereo.setLabel('bottom', 'Time',units='s')
         self.ir_graphstereo.setLabel('left', 'Amplitude')
         self.ir_graphstereo.setBackground('w')
         self.ir_graphstereo.setVisible(False)
         # Bouton spectro/fft
         self.sp_button = QPushButton('Spectro ou FFT',self)
-        self.sp_button.setGeometry(470,170,560,60)
+        self.sp_button.setGeometry(470,170,275,60)
         self.sp_button.setVisible(False)
+        # Bouton player
+        self.play_button = QPushButton('Play IR',self)
+        self.play_button.setGeometry(755,170,275,60)
+        self.play_button.setVisible(False)
         # spectro
         self.ir_spectro=pg.PlotWidget(self)
         self.ir_spectro.setGeometry(30, 280, 1440, 400)
         self.ir_spectro.setVisible(False)
-        self.ir_spectro.setLabel('bottom','Time (s)')
-        self.ir_spectro.setLabel('left','Frequency (Hz)')
+        self.ir_spectro.setLabel('bottom','Time',units='s')
+        self.ir_spectro.setLabel('left','Frequency',units='Hz')
         self.ir_spectro.setBackground('w')
         # FFT
         self.ir_fft=pg.PlotWidget(self)
         self.ir_fft.setGeometry(30, 280, 1440, 400)
-        self.ir_fft.setLabel('bottom','Frequency (Hz)')
-        self.ir_fft.setLabel('left','Amplitude (dB)')
+        self.ir_fft.setLabel('bottom','Frequency',units='Hz')
+        self.ir_fft.setLabel('left','Amplitude',units='dB')
         self.ir_fft.setBackground('w')
         self.ir_fft.setLogMode(x=True)
         self.ir_fft.showGrid(x=True,y=True)
         self.ir_fft.setVisible(False)
+
+    def sound_player(self,url):
+        self.sound = QSound(url)
+        self.sound.play()
+        return
 
     def graphIR(self, data):
         if data.ndim == 1:
@@ -132,15 +144,12 @@ class MainWindow(QMainWindow):
             self.ir_fft.setVisible(False)
             self.ir_graphstereo.setVisible(False)
             self.ir_graphmono.setVisible(True)
-            i=-1
-            while abs(data[i]) <= 0.00002:
-                i -= 1
-            data_mono = data[0:i]
-            normdata_mono = data_mono/np.max(abs(data))
-            t = [x/int(self.sr.text()) for x in range(len(data_mono))]
+
+            normdata_mono = data/np.max(abs(data))
+            t = [x/int(self.sr.text()) for x in range(len(normdata_mono))]
             self.ir_graphmono.clear()
             pen = pg.mkPen(color = 'b')
-            self.ir_graphmono.plot(t[0:len(data_mono)],normdata_mono,pen=pen)
+            self.ir_graphmono.plot(t[0:len(normdata_mono)],normdata_mono,pen=pen)
             # y ticks
             aymono = self.ir_graphmono.getAxis('left')
             yticksmono = [(0,'Mono')]
@@ -154,11 +163,9 @@ class MainWindow(QMainWindow):
             self.ir_fft.setVisible(False)
             self.ir_graphmono.setVisible(False)
             self.ir_graphstereo.setVisible(True)
-            i = -1
-            while abs(data[i,0]) <= 0.00005 and abs(data[i,1]) <= 0.00005:
-                i -= 1
-            dataL = data[0:i,0]
-            dataR = data[0:i,1]
+
+            dataL = data[:,0]
+            dataR = data[:,1]
             normdataL = dataL/np.max(abs(data))
             normdataR = dataR/np.max(abs(data))
             t = [x/int(self.sr.text()) for x in range(len(data[:,0]))]
@@ -182,8 +189,8 @@ class MainWindow(QMainWindow):
     
     def openFileSweep(self):
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select sweep file", "","*wav", options=options)
+        # options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select sweep file", "","*wav")#, options=options)
         test = read(fileName)[1] 
         if test.ndim == 2 :
             _,c = np.shape(test)
@@ -191,7 +198,7 @@ class MainWindow(QMainWindow):
                 warn=QMessageBox()
                 warn.setText('File contains too much channels. Please choose a mono or stereo file only.')
                 warn.setTitle('Error')
-                fileName, _ = QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "",'*.wav', options=options)
+                fileName, _ = QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "",'*.wav')#, options=options)
                 test = read(fileName)[1] 
                 if test.ndim == 1:
                     c=1
@@ -205,8 +212,8 @@ class MainWindow(QMainWindow):
     
     def openFileResponse(self):
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select response file", "","*.wav", options=options)
+        # options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select response file", "","*.wav")#, options=options)
         test = read(fileName)[1] 
         if test.ndim == 2 :
             _,c = np.shape(test)
@@ -214,7 +221,7 @@ class MainWindow(QMainWindow):
                 warn=QMessageBox()
                 warn.setText('File contains too much channels. Please choose a mono or stereo file only.')
                 warn.setTitle('Error')
-                fileName, _ = QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "","*.wav", options=options)
+                fileName, _ = QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "","*.wav")#, options=options)
                 test = read(fileName)[1] 
                 if test.ndim == 1:
                     c=1
@@ -226,8 +233,8 @@ class MainWindow(QMainWindow):
         
     def saveFileDialog(self):
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav", options=options)
+        # options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav")#, options=options)
         if fileName[-4:] != '.wav':
                 fileName = fileName + '.wav'
         self.save_data=fileName
@@ -294,7 +301,7 @@ class MainWindow(QMainWindow):
             # temporal shift to put the begining of the IR to temporal origin
                 # left channel
             i=0
-            while abs(irL[i]) < 10:
+            while abs(irL[i]) < 10 and abs(irR[i]) < 10:
                 i += 1
             irL = irL[i:len(irL)]
                 # right channel
@@ -313,7 +320,6 @@ class MainWindow(QMainWindow):
             normir = np.column_stack((normirL, normirR))
             normir = normir.astype(np.int16)
             # save wav file
-            write(targetname, sr, normir)
             return (normir) 
             
         #if recording in mono
@@ -341,8 +347,11 @@ class MainWindow(QMainWindow):
             while abs(normir[i]) <= 13:
                 i -= 1
             normir = normir[0:i]
+            index = np.argmax(normir)
+            if index > 20:
+                normir = normir[index-20:]
+            normir[0:9] = normir[0:9] * [i/10 for i in range(0,9)] 
             # save wav file
-            write(targetname +'.wav', rateout, normir)
             return (normir)
             
     def programme(self,sweep_data,response_data,save_data,begin_freq,end_freq,sr):
@@ -355,6 +364,7 @@ class MainWindow(QMainWindow):
         f2 = float(end_freq)
         sr = int(sr)
         ir = self.deconvolver(sweeppath, recordpath, targetname, f1, f2, sr)
+        write(targetname, sr, ir)
         # output depending of the format in mode
             # if stereo
         if ir.ndim == 2:
@@ -370,6 +380,10 @@ class MainWindow(QMainWindow):
             self.sp_button.setText('Spectrum')
             self.sp_button.setVisible(True)
             self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
+            
+        self.play_button.setVisible(True)
+        self.play_button.clicked.connect(lambda : self.sound_player(targetname))
+        return
     
     def fftIR(self,irfile,srate):
         self.ir_graphstereo.setVisible(False)
@@ -377,7 +391,7 @@ class MainWindow(QMainWindow):
         self.ir_spectro.setVisible(False)
         self.ir_fft.setVisible(True)
         # get signal & compute FFT
-        npoutfile = np.asarray(irfile)
+        npoutfile = np.asarray(irfile)/np.max(irfile)
         pad_length = next_power_of_2(next_power_of_2(len(npoutfile)))
         padded_npoutfile = np.pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
         h_panned_npoutfile = padded_npoutfile*np.blackman(pad_length)
@@ -386,6 +400,7 @@ class MainWindow(QMainWindow):
         f = np.fft.rfftfreq(pad_length,1/srate)
         
         pen = pg.mkPen(color = 'r')
+        self.ir_fft.clear()
         self.ir_fft.plot(f,smooth(20*np.log10(abs(fft_outfile)),45)-np.max(20*np.log10(abs(fft_outfile))),pen=pen)
         self.ir_fft.setXRange(np.log10(float(self.begin_freq.text())),np.log10(float(self.end_freq.text())))
         self.sp_button.setText('Temporal signal')
