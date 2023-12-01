@@ -306,7 +306,7 @@ class MainWindow(QMainWindow):
             normirL = normir[:,0]
             normirR = normir[:,1]
             i = -1
-            while abs(normirL[i]) <= 13:
+            while abs(normirL[i]) <= 3:
                 i -= 1
             normirL = normirL[0:i]
             normirR = normirR[0:i]
@@ -337,7 +337,7 @@ class MainWindow(QMainWindow):
             normir = self.normalize(ir)*32767
             normir = normir.astype(np.int16)
             i = -1
-            while abs(normir[i]) <= 13:
+            while abs(normir[i]) <= 3:
                 i -= 1
             normir = normir[0:i]
             index = np.argmax(normir)
