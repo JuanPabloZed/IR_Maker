@@ -106,24 +106,16 @@ class MainWindow(QMainWindow):
         self.ir_graphstereo.setLabel('left', 'Amplitude')
         self.ir_graphstereo.setBackground('w')
         self.ir_graphstereo.setVisible(False)
-        # Bouton fft
-        self.fft_button = QPushButton('Spectrum',self)
-        self.fft_button.setGeometry(470,170,275,60)
-        self.fft_button.setVisible(False)
-        # Bouton spectro
-        self.spectro_button = QPushButton('Spectrogram',self)
-        self.spectro_button.setGeometry(470,170,275,60)
-        self.spectro_button.setVisible(False)
-        # bouton signal temporel
-        self.tempo_button = QPushButton('Temporal signal',self)
-        self.tempo_button.setGeometry(470,170,275,60)
-        self.tempo_button.setVisible(False)
+        # Bouton fft/spectro
+        self.sp_button = QPushButton('Spectro ou FFT',self)
+        self.sp_button.setGeometry(470,170,275,60)
+        self.sp_button.setVisible(False)
         # Bouton player
         self.play_button = QPushButton('Play IR',self)
         self.play_button.setGeometry(755,170,275,60)
         self.play_button.setVisible(False)
         # spectro
-        self.ir_spectro=pg.PlotWidget(self)
+        self.ir_spectro = pg.PlotWidget(self)
         self.ir_spectro.setGeometry(30, 280, 1440, 400)
         self.ir_spectro.setVisible(False)
         self.ir_spectro.setLabel('bottom','Time',units='s')
@@ -370,18 +362,15 @@ class MainWindow(QMainWindow):
         if ir.ndim == 2:
             # stereo IR
             self.graphIR(ir)
-            self.fft_button.setVisible(False)
-            self.tempo_button.setVisible(False)
-            self.spectro_button.setVisible(True)
-            self.spectro_button.clicked.connect(lambda : self.spectroIR(ir,sr))
+            self.sp_button.setVisible(True)
+            self.sp_button.setText('Spectrogram')
+            self.sp_button.clicked.connect(lambda : self.spectroIR(ir,sr))
             # if mono
         elif ir.ndim == 1:
             # mono IR
             self.graphIR(ir)
-            self.tempo_button.setVisible(False)
-            self.spectro_button.setVisible(False)
-            self.fft_button.setVisible(True)
-            self.fft_button.clicked.connect(lambda : self.fftIR(ir,sr))
+            self.sp_button.setText('Spectrum')
+            self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
             
         self.play_button.setVisible(True)
         self.play_button.clicked.connect(lambda : QSound.play(save_data))
@@ -418,10 +407,8 @@ class MainWindow(QMainWindow):
         self.ir_fft.plot(f,fft_toplot,fillLevel=1.15*np.min(fft_toplot),brush=brush,pen=pen)
         self.ir_fft.setXRange(np.log10(f[0]),np.log10(f[-1]))
         # buttons display
-        self.fft_button.setVisible(False)
-        self.spectro_button.setVisible(False)
-        self.tempo_button.setVisible(True)
-        self.tempo_button.clicked.connect(lambda : self.replotIRmono('temporal'))
+        self.sp_button.setText('Temporal signal')
+        self.sp_button.clicked.connect(lambda : self.replotIRmono('temporal'))
         return
 
     def replotIRmono(self,mode):
@@ -429,18 +416,15 @@ class MainWindow(QMainWindow):
             self.ir_fft.setVisible(False)
             self.ir_graphmono.setVisible(True)
             # buttons display
-            self.tempo_button.setVisible(False)
-            self.fft_button.setVisible(True)
-            self.fft_button.clicked.connect(lambda : self.replotIRmono('fft'))
+            self.sp_button.setText('Spectrum')
+            self.sp_button.clicked.connect(lambda : self.replotIRmono('fft'))
     
         if mode == 'fft':
             self.ir_graphmono.setVisible(False)
             self.ir_fft.setVisible(True)
             # buttons display
-            self.fft_button.setVisible(False)
-            self.tempo_button.setVisible(True)
-            self.tempo_button.clicked.connect(lambda : self.replotIRmono('temporal'))
-        
+            self.sp_button.setText('Temporal signal')
+            self.sp_button.clicked.connect(lambda : self.replotIRmono('temporal'))
         return
            
     def spectroIR(self,file,srate):
@@ -472,10 +456,8 @@ class MainWindow(QMainWindow):
         self.ir_spectro.showGrid(x=True,y=True)
         self.ir_spectro.setYRange(int(self.begin_freq.text()),int(self.end_freq.text()))
         # buttons display
-        self.spectro_button.setVisible(False)
-        self.fft_button.setVisible(False)
-        self.tempo_button.setVisible(True)
-        self.tempo_button.clicked.connect(lambda : self.replotIRstereo('temporal'))
+        self.sp_button.setText('Temporal signal')
+        self.sp_button.clicked.connect(lambda : self.replotIRstereo('temporal'))
         return
 
     def replotIRstereo(self,mode):
@@ -483,17 +465,15 @@ class MainWindow(QMainWindow):
             self.ir_spectro.setVisible(False)
             self.ir_graphstereo.setVisible(True)
             # buttons display
-            self.tempo_button.setVisible(False)
-            self.spectro_button.setVisible(True)
-            self.spectro_button.clicked.connect(lambda : self.replotIRstereo('spectro'))
+            self.sp_button.setText('Spectrogram')
+            self.sp_button.clicked.connect(lambda : self.replotIRstereo('spectro'))
         
         if mode == 'spectro':
             self.ir_graphstereo.setVisible(False)
             self.ir_spectro.setVisible(True)
             # buttons display
-            self.spectro_button.setVisible(False)
-            self.tempo_button.setVisible(True)
-            self.tempo_button.clicked.connect(lambda : self.replotIRstereo('temporal'))
+            self.sp_button.setText('Temporal signal')
+            self.sp_button.clicked.connect(lambda : self.replotIRstereo('temporal'))
         return
 
     def sweep(self):

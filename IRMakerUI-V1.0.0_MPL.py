@@ -348,6 +348,7 @@ class MainWindow(QMainWindow):
             self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
     
     def fftIR(self,irfile,srate):
+        # switch displayed plot
         self.ir_graphstereo.setVisible(False)
         self.ir_graphmono.setVisible(False)
         self.ir_spectro.setVisible(False)
@@ -360,7 +361,7 @@ class MainWindow(QMainWindow):
         # fft_outfile = np.fft.rfft(h_panned_npoutfile)
         fft_outfile = np.fft.rfft(h_panned_npoutfile)
         f = np.fft.rfftfreq(pad_length,1/srate)
-        
+        # plot formatting
         pen = pg.mkPen(color = 'r')
         self.ir_fft.plot(f,smooth(20*np.log10(abs(fft_outfile)),45)-np.max(20*np.log10(abs(fft_outfile))),pen=pen)
         self.ir_fft.setXRange(np.log10(int(self.begin_freq.text())),np.log10(int(self.end_freq.text())))
