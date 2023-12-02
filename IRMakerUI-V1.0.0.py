@@ -18,6 +18,7 @@ Version = "V1.0.0"
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
+        print('init')
         super(MainWindow, self).__init__(parent)
         self.setWindowTitle("IR Maker")
         MainWindow.resize(self, 1500, 730)
@@ -110,6 +111,7 @@ class MainWindow(QMainWindow):
         self.sp_button = QPushButton('Spectro ou FFT',self)
         self.sp_button.setGeometry(470,170,275,60)
         self.sp_button.setVisible(False)
+        self.sp_button.clicked.connect(lambda : self.do_stuff())
         # Bouton player
         self.play_button = QPushButton('Play IR',self)
         self.play_button.setGeometry(755,170,275,60)
@@ -131,7 +133,11 @@ class MainWindow(QMainWindow):
         self.ir_fft.showGrid(x=True,y=True)
         self.ir_fft.setVisible(False)
 
+    def do_stuff(self):
+        return
+    
     def graphIR(self, data):
+        print('graphIR')
         if data.ndim == 1:
             self.ir_spectro.setVisible(False)
             self.ir_fft.setVisible(False)
@@ -181,9 +187,8 @@ class MainWindow(QMainWindow):
         
     
     def openFileSweep(self):
-        options = QFileDialog.Options()
-        # options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select sweep file", "","*wav")#, options=options)
+        print('openfilesweep')
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select sweep file", "","*wav")
         test = read(fileName)[1] 
         if test.ndim == 2 :
             _,c = np.shape(test)
@@ -191,7 +196,7 @@ class MainWindow(QMainWindow):
                 warn=QMessageBox()
                 warn.setText('File contains too much channels. Please choose a mono or stereo file only.')
                 warn.setTitle('Error')
-                fileName, _ = QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "",'*.wav')#, options=options)
+                fileName, _ = QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "",'*.wav')
                 test = read(fileName)[1] 
                 if test.ndim == 1:
                     c=1
@@ -204,9 +209,8 @@ class MainWindow(QMainWindow):
         return
     
     def openFileResponse(self):
-        options = QFileDialog.Options()
-        # options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self,"Select response file", "","*.wav")#, options=options)
+        print('openfileresponse')
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select response file", "","*.wav")
         test = read(fileName)[1] 
         if test.ndim == 2 :
             _,c = np.shape(test)
@@ -214,7 +218,7 @@ class MainWindow(QMainWindow):
                 warn=QMessageBox()
                 warn.setText('File contains too much channels. Please choose a mono or stereo file only.')
                 warn.setTitle('Error')
-                fileName, _ = QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "","*.wav")#, options=options)
+                fileName, _ = QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "","*.wav")
                 test = read(fileName)[1] 
                 if test.ndim == 1:
                     c=1
@@ -225,9 +229,8 @@ class MainWindow(QMainWindow):
         return
         
     def saveFileDialog(self):
-        options = QFileDialog.Options()
-        # options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav")#, options=options)
+        print('savefiledialog')
+        fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav")
         if fileName[-4:] != '.wav':
                 fileName = fileName + '.wav'
         self.save_data=fileName
@@ -254,6 +257,7 @@ class MainWindow(QMainWindow):
         OUTPUTS : 
             - ir (or irL & irR if stereo output), the ndarray containing the IR
         """
+        print('deconvolver')
         # load files
         _, outfile = read(recordpath, mmap=False)
     
@@ -348,6 +352,7 @@ class MainWindow(QMainWindow):
             return (normir)
     
     def programme(self,sweep_data,response_data,save_data,begin_freq,end_freq,sr):
+        print('programme')
         # on choppe les paramètres nécessaires au calcul
         sweeppath = sweep_data
         recordpath = response_data
@@ -357,6 +362,8 @@ class MainWindow(QMainWindow):
         sr = int(sr)
         ir = self.deconvolver(sweeppath, recordpath, f1, f2)
         write(targetname, sr, ir)
+        print('dim IR =')
+        print(ir.ndim)
         # output depending of the format in mode
             # if stereo
         if ir.ndim == 2:
@@ -364,20 +371,23 @@ class MainWindow(QMainWindow):
             self.graphIR(ir)
             self.sp_button.setVisible(True)
             self.sp_button.setText('Spectrogram')
+            self.sp_button.clicked.disconnect()
             self.sp_button.clicked.connect(lambda : self.spectroIR(ir,sr))
             # if mono
         elif ir.ndim == 1:
             # mono IR
             self.graphIR(ir)
+            self.sp_button.setVisible(True)
             self.sp_button.setText('Spectrum')
+            self.sp_button.clicked.disconnect()
             self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
             
         self.play_button.setVisible(True)
         self.play_button.clicked.connect(lambda : QSound.play(save_data))
         return
-        
     
     def fftIR(self,irfile,srate):
+        print('fftIR')
         self.ir_graphstereo.setVisible(False)
         self.ir_graphmono.setVisible(False)
         self.ir_spectro.setVisible(False)
@@ -407,16 +417,20 @@ class MainWindow(QMainWindow):
         self.ir_fft.plot(f,fft_toplot,fillLevel=1.15*np.min(fft_toplot),brush=brush,pen=pen)
         self.ir_fft.setXRange(np.log10(f[0]),np.log10(f[-1]))
         # buttons display
+        self.sp_button.clicked.disconnect()
+        self.sp_button.setVisible(True)
         self.sp_button.setText('Temporal signal')
         self.sp_button.clicked.connect(lambda : self.replotIRmono('temporal'))
         return
 
     def replotIRmono(self,mode):
+        print('replotIRmono')
         if mode == 'temporal':
             self.ir_fft.setVisible(False)
             self.ir_graphmono.setVisible(True)
             # buttons display
             self.sp_button.setText('Spectrum')
+            self.sp_button.clicked.disconnect()
             self.sp_button.clicked.connect(lambda : self.replotIRmono('fft'))
     
         if mode == 'fft':
@@ -424,10 +438,12 @@ class MainWindow(QMainWindow):
             self.ir_fft.setVisible(True)
             # buttons display
             self.sp_button.setText('Temporal signal')
+            self.sp_button.clicked.disconnect()
             self.sp_button.clicked.connect(lambda : self.replotIRmono('temporal'))
         return
            
     def spectroIR(self,file,srate):
+        print('spectroIR')
         self.ir_fft.setVisible(False)
         self.ir_graphstereo.setVisible(False)
         self.ir_graphmono.setVisible(False)
@@ -457,15 +473,18 @@ class MainWindow(QMainWindow):
         self.ir_spectro.setYRange(int(self.begin_freq.text()),int(self.end_freq.text()))
         # buttons display
         self.sp_button.setText('Temporal signal')
+        self.sp_button.clicked.disconnect()
         self.sp_button.clicked.connect(lambda : self.replotIRstereo('temporal'))
         return
 
     def replotIRstereo(self,mode):
+        print('replotIRstereo')
         if mode == 'temporal':
             self.ir_spectro.setVisible(False)
             self.ir_graphstereo.setVisible(True)
             # buttons display
             self.sp_button.setText('Spectrogram')
+            self.sp_button.clicked.disconnect()
             self.sp_button.clicked.connect(lambda : self.replotIRstereo('spectro'))
         
         if mode == 'spectro':
@@ -473,6 +492,7 @@ class MainWindow(QMainWindow):
             self.ir_spectro.setVisible(True)
             # buttons display
             self.sp_button.setText('Temporal signal')
+            self.sp_button.clicked.disconnect()
             self.sp_button.clicked.connect(lambda : self.replotIRstereo('temporal'))
         return
 

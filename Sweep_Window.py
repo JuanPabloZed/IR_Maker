@@ -154,6 +154,7 @@ class Sweep_Window(QMainWindow):
         self.spectro_sweep.addItem(img)
         self.spectro_sweep.showGrid(x=True,y=True)
         self.spectro_button.setText('Temporal signal')
+        self.spectro_button.clicked.disconnect()
         self.spectro_button.clicked.connect(lambda : self.replotSweep())
         return
     
@@ -161,6 +162,7 @@ class Sweep_Window(QMainWindow):
         self.spectro_sweep.setVisible(False)
         self.graph.setVisible(True)
         self.spectro_button.setText('Spectrogram')
+        self.spectro_button.clicked.disconnect()
         self.spectro_button.clicked.connect(lambda : self.replotSpectro())
         return
         
@@ -168,6 +170,7 @@ class Sweep_Window(QMainWindow):
         self.graph.setVisible(False)
         self.spectro_sweep.setVisible(True)
         self.spectro_button.setText('Temporal signal')
+        self.spectro_button.clicked.disconnect()
         self.spectro_button.clicked.connect(lambda : self.replotSweep())
         return
 
