@@ -13,7 +13,7 @@ import pyqtgraph as pg
 from Sweep_Window import Sweep_Window
 from funcs import next_power_of_2, smooth
 import sys
-
+#
 Version = "V1.0.0"
 
 class MainWindow(QMainWindow):
