@@ -43,7 +43,7 @@
      <string>V1.1.0</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -180,6 +180,15 @@
           <height>151</height>
          </rect>
         </property>
+        <property name="horizontalScrollMode">
+         <enum>QAbstractItemView::ScrollPerPixel</enum>
+        </property>
+        <property name="viewMode">
+         <enum>QListView::ListMode</enum>
+        </property>
+        <property name="selectionRectVisible">
+         <bool>true</bool>
+        </property>
        </widget>
       </widget>
      </item>
@@ -204,11 +213,14 @@
        <widget class="QComboBox" name="bitdepth_combo">
         <property name="geometry">
          <rect>
-          <x>90</x>
-          <y>150</y>
+          <x>70</x>
+          <y>165</y>
           <width>73</width>
           <height>22</height>
          </rect>
+        </property>
+        <property name="currentIndex">
+         <number>0</number>
         </property>
         <item>
          <property name="text">
@@ -229,8 +241,8 @@
        <widget class="QLabel" name="bitdepth_label">
         <property name="geometry">
          <rect>
-          <x>30</x>
-          <y>150</y>
+          <x>10</x>
+          <y>165</y>
           <width>51</width>
           <height>21</height>
          </rect>
@@ -243,13 +255,35 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>25</y>
-          <width>21</width>
-          <height>20</height>
+          <y>15</y>
+          <width>171</width>
+          <height>51</height>
          </rect>
         </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <italic>false</italic>
+         </font>
+        </property>
         <property name="text">
-         <string/>
+         <string notr="true">Automatic output (adds
+&quot; - IR&quot; suffix, in recording
+folder)</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
        <widget class="QRadioButton" name="customsave_radio">
@@ -296,53 +330,30 @@
          <bool>false</bool>
         </property>
        </widget>
-       <widget class="QLabel" name="autosave_label">
+       <widget class="QLabel" name="sr_label">
         <property name="geometry">
          <rect>
-          <x>40</x>
-          <y>20</y>
-          <width>151</width>
-          <height>31</height>
+          <x>10</x>
+          <y>130</y>
+          <width>81</width>
+          <height>21</height>
          </rect>
         </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="text">
-         <string>Automatic output (create folder &amp; autonaming)</string>
+         <string>Sample rate</string>
         </property>
-        <property name="textFormat">
-         <enum>Qt::RichText</enum>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-        </property>
-        <property name="wordWrap">
-         <bool>true</bool>
+       </widget>
+       <widget class="QLineEdit" name="sr_txtedit">
+        <property name="geometry">
+         <rect>
+          <x>90</x>
+          <y>130</y>
+          <width>91</width>
+          <height>22</height>
+         </rect>
         </property>
        </widget>
       </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>240</y>
-      <width>701</width>
-      <height>471</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="PlotWidget" name="temporal_plot"/>
-     </item>
-     <item>
-      <widget class="PlotWidget" name="spectral_plot"/>
      </item>
     </layout>
    </widget>
@@ -368,6 +379,39 @@
       <string>Play IR</string>
      </property>
     </widget>
+   </widget>
+   <widget class="PlotWidget" name="spectrogram_plot">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>480</y>
+      <width>700</width>
+      <height>220</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="PlotWidget" name="temporal_plot">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>240</y>
+      <width>700</width>
+      <height>220</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="PlotWidget" name="spectral_plot">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>480</y>
+      <width>700</width>
+      <height>220</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
