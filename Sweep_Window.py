@@ -71,10 +71,12 @@ class Sweep_Window(QMainWindow):
         self.spectro_button.setGeometry(220,160,285,60)
         self.spectro_button.setVisible(False)
         self.x=0
+        self.spectro_button.clicked.connect(lambda  :self.do_stuff())
         # player button
         self.play_sweep = QPushButton('Play the ESS',self)
         self.play_sweep.setGeometry(505,160,285,60)
         self.play_sweep.setVisible(False)
+        self.play_sweep.clicked.connect(lambda : self.do_stuff())
         # spectro
         self.spectro_sweep=pg.PlotWidget(self)
         self.spectro_sweep.setGeometry(30, 250, 940, 420)
@@ -83,10 +85,11 @@ class Sweep_Window(QMainWindow):
         self.spectro_sweep.setBackground('w')
         self.spectro_sweep.setVisible(False)
 
+    def do_stuff(self):
+        return
+
     def saveSweepDialog(self):
-        options = QFileDialog.Options()
-       # options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav")#, options=options)
+        fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav")
         if fileName[-4:] != '.wav':
                 fileName = fileName + '.wav'
         self.save_data=fileName
@@ -124,8 +127,10 @@ class Sweep_Window(QMainWindow):
         write(self.save_data, sr, self.x)
         self.graph_fct(self.x)
         self.spectro_button.setVisible(True)
+        self.spectro_button.clicked.disconnect()
         self.spectro_button.clicked.connect(lambda : self.Spectrogram(self.x,int(self.sr.text())))
         self.play_sweep.setVisible(True)
+        self.play_sweep.clicked.disconnect()
         self.play_sweep.clicked.connect(lambda : QSound.play(self.save_data))
         return
 

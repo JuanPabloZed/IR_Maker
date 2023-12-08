@@ -13,7 +13,7 @@ import pyqtgraph as pg
 from Sweep_Window import Sweep_Window
 from funcs import next_power_of_2, smooth
 import sys
-#
+
 Version = "V1.0.0"
 
 class MainWindow(QMainWindow):
@@ -116,6 +116,7 @@ class MainWindow(QMainWindow):
         self.play_button = QPushButton('Play IR',self)
         self.play_button.setGeometry(755,170,275,60)
         self.play_button.setVisible(False)
+        self.play_button.clicked.connect(lambda : self.do_stuff())
         # spectro
         self.ir_spectro = pg.PlotWidget(self)
         self.ir_spectro.setGeometry(30, 280, 1440, 400)
@@ -347,7 +348,7 @@ class MainWindow(QMainWindow):
             index = np.argmax(normir)
             if index > 20:
                 normir = normir[index-20:]
-            normir[0:9] = normir[0:9] * [i/10 for i in range(0,9)] 
+            # normir[0:9] = normir[0:9] * [i/10 for i in range(0,9)] 
             # save wav file
             return (normir)
     
@@ -383,8 +384,14 @@ class MainWindow(QMainWindow):
             self.sp_button.clicked.connect(lambda : self.fftIR(ir,sr))
             
         self.play_button.setVisible(True)
-        self.play_button.clicked.connect(lambda : QSound.play(save_data))
+        self.play_button.clicked.disconnect()
+        self.play_button.clicked.connect(lambda : self.playsound())
         return
+    
+    def playsound(self):
+        data = self.save_data
+        print("playsound" + data)
+        QSound.play(data)
     
     def fftIR(self,irfile,srate):
         print('fftIR')
