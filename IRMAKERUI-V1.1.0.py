@@ -6,11 +6,12 @@ from soundfile import write
 
 from PyQt5.QtWidgets import *
 from PyQt5 import QtCore, uic
+from PyQt5.QtMultimedia import QSound
 import pyqtgraph as pg
 from pathlib import Path
 
-from Sweep_Window import Sweep_Window
-from funcs import next_power_of_2,smooth,normalize
+from Sweep_Window_2 import SweepWindow
+from funcs import next_power_of_2,smooth
 
 import sys
 from os import mkdir,path
@@ -51,6 +52,7 @@ class MainWindow(QMainWindow):
         self.createir_button = self.findChild(QPushButton,'compute_button')
         self.createir_button.setEnabled(False)
         self.playir_button = self.findChild(QPushButton,'play_ir')
+        self.playir_button.clicked.connect(lambda: self.do_nothing())
         self.playir_button.setVisible(False)
         # plots
         self.ir_plot = self.findChild(pg.PlotWidget, "temporal_plot")
@@ -70,6 +72,7 @@ class MainWindow(QMainWindow):
         self.spectrogram_img = self.findChild(pg.PlotWidget,'spectrogram_plot')
         self.spectrogram_img.setBackground('w')
         self.spectrogram_img.setVisible(False)
+        self.spectrogram_img.setTitle('Spectrogram (left channel)')
         self.spectrogram_img.setLabel('bottom','Time',units='s')
         self.spectrogram_img.setLabel('left','Frequency',units='Hz')
 
@@ -100,33 +103,43 @@ class MainWindow(QMainWindow):
         # compute the IR
         ir = self.deconvolver()
         # custom path or auto path for saving IR file
-        outpath = ''
+        self.outpath = ''
         if self.autosave_radio.isChecked() == True:
             irdir_path = self.folderpath + '/IR'
             # if autosave file already created, don't create it again
             if path.isdir(irdir_path) == False:
                 mkdir(irdir_path)
-            outpath = irdir_path +'/'+ self.save_name
+            self.outpath = irdir_path +'/'+ self.save_name
         elif self.customsave_radio.isChecked() == True:
-            outpath = self.save_path
+            self.outpath = self.save_path
 
         # save the IR file depending on the desired bit depth
         if self.bitdepth_combo.currentIndex() == 0: # 16 bits
-            write(outpath,ir,int(self.srate.text()),'PCM_16')
+            write(self.outpath,ir,int(self.srate.text()),'PCM_16')
         elif self.bitdepth_combo.currentIndex() == 1: # 24 bits
-            write(outpath,ir,int(self.srate.text()),'PCM_24')
+            write(self.outpath,ir,int(self.srate.text()),'PCM_24')
         elif self.bitdepth_combo.currentIndex() == 2: # 32 bits
-            write(outpath,ir,int(self.srate.text()),'PCM_32')
+            write(self.outpath,ir,int(self.srate.text()),'PCM_32')
         
         # plot data
         self.temporalgraph_fct(ir)
         self.spectralgraph_fct(ir)
 
         self.playir_button.setVisible(True)
+        self.playir_button.clicked.disconnect()
+        self.playir_button.clicked.connect(lambda: self.playIR())
         return
     
     def normalize(self,values):
         return values / np.max(values)
+    
+    def do_nothing(self):
+        return
+
+    def playIR(self):
+        data = self.outpath
+        QSound.play(data)
+        return
     
     def deconvolver(self):
         """
@@ -195,12 +208,12 @@ class MainWindow(QMainWindow):
             # merge in one stereo wav file
             ir = np.column_stack((irL, irR))
             # normalization of the IR for int16 encoding
-            normir = self.normalize(ir)
-            normir = normir.astype(np.float32)
+            normir = self.normalize(ir)*2**31-1
+            normir = normir.astype(np.int32)
             normirL = normir[:,0]
             normirR = normir[:,1]
             i = -1
-            while abs(normirL[i]) <= 0.00015:
+            while abs(normirL[i]) <= 300000:
                 i -= 1
             normirL = normirL[0:i]
             normirR = normirR[0:i]
@@ -317,7 +330,7 @@ class MainWindow(QMainWindow):
             self.spectral_plot.setVisible(False)
             self.spectrogram_img.setVisible(True)
             # spectro de la moyenne des deux canaux
-            IR = (np.asarray(data[:,0]) + np.asarray(data[:,1]))/2
+            IR = np.asarray(data[:,0])
             f,t,Sxx = spectrogram(IR,fs=int(self.srate.text()),nfft=len(IR)//50,nperseg=len(IR)//400,scaling='spectrum')
             Sxx = 20*np.log10(np.matrix.transpose(Sxx))
             img = pg.ImageItem()
@@ -390,7 +403,7 @@ class MainWindow(QMainWindow):
         return
     
     def sweep(self):
-        dialog=Sweep_Window(self)
+        dialog=SweepWindow(self)
         dialog.show()
         return
     

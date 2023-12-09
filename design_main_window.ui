@@ -272,8 +272,8 @@
          </font>
         </property>
         <property name="text">
-         <string notr="true">Automatic output (adds
-&quot; - IR&quot; suffix, in recording
+         <string notr="true">Automatic output (creates
+&quot;IR&quot; folder in recordings
 folder)</string>
         </property>
         <property name="iconSize">
