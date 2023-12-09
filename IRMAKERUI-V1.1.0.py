@@ -94,9 +94,7 @@ class MainWindow(QMainWindow):
         # IR creation
         self.createir_button.clicked.connect(lambda: self.programme())
 
-
         self.show()
-    
     
     # functions section
     def programme(self):
@@ -142,22 +140,6 @@ class MainWindow(QMainWindow):
         return
     
     def deconvolver(self):
-        """
-        Calulates the IR of a system in which the sine sweep contained in sweeppath has been emitted.
-        Uses theoretical inverse convolution of an Exponential Sine Sweep (ESS) to compute the IR.
-        Creates a mono or stereo file depending on the format of the recording of the system response contained in recordpath.
-        Saves the IR in a wav file named by targetname.
-        -----
-        INPUTS :
-            - sweeppath (str) : path to the sine sweep wav file (MUST BE ESS)
-            - recordpath (str) : path to the system's response to the sine sweep
-            - targetname (str) : name of the IR wav file (don't forget the '.wav' at the end)
-            - f1 (float) : initial frequency for the sweep
-            - f2 (float) : final frequency for the sweep
-            - sr (int) : IR sample rate (44100Hz, 48000Hz, 88200Hz, 96000Hz, 192000Hz)
-        OUTPUTS : 
-            - ir (or irL & irR if stereo output), the ndarray containing the IR
-        """
         # load files
         _, outfile = read(self.recordfile_path, mmap=False)
     
@@ -406,9 +388,6 @@ class MainWindow(QMainWindow):
         dialog=SweepWindow(self)
         dialog.show()
         return
-    
-
-
 
 # run app
 app = QApplication(sys.argv)
