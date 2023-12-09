@@ -16,7 +16,7 @@ class SweepWindow(QMainWindow):
         super(SweepWindow,self).__init__(parent)
         self.setWindowTitle('Sweep generator')
         # load ui
-        uic.loadUi('design_sweep_generator.ui',self)
+        uic.loadUi('c:\IRs\IR_Maker\design_sweep_generator.ui',self)
 
         # get elements
         # sweep params

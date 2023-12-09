@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.setWindowTitle('IR Maker')
         # load ui made with qt designer
-        uic.loadUi('design_main_window.ui',self)
+        uic.loadUi('c:\IRs\IR_Maker\design_main_window.ui',self)
 
         # get elements for the engine
 
@@ -93,6 +93,7 @@ class MainWindow(QMainWindow):
         
         # IR creation
         self.createir_button.clicked.connect(lambda: self.programme())
+
 
         self.show()
     
@@ -344,7 +345,6 @@ class MainWindow(QMainWindow):
             self.recordfile_path = self.files_list.model().filePath(index)
             print(self.recordfile_path)
         self.save_name = Path(recordName).stem + ' - IR.wav'
-        self.createir_button.setText(self.save_name)
         return
 
     def openFileSweep(self):
