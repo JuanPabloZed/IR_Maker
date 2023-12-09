@@ -24,4 +24,8 @@ plugin.
 /!\ WARNING /!\ 
 Be sure to use the same sample rate for the ESS, the response and the IR to get the cleanest IR.
 
+/!\ COMPILING INTO .exe /!\
+If you want to make a .exe out of this code, you can by installing the different necessary modules contained in requirements.txt, and then typing the following command in cmd: 
+pyinstaller --noconfirm --onefile --windowed "path\of\the\output.exe\file"
+
 Thank you for using our application !
