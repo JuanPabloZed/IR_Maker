@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>620</width>
-    <height>680</height>
+    <height>630</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="PlotWidget" name="spectrogram_plot">
+   <widget class="PlotWidget" name="spectro_plot">
     <property name="enabled">
      <bool>true</bool>
     </property>
@@ -27,7 +27,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="PlotWidget" name="temporal_plot">
+   <widget class="PlotWidget" name="sweep_plot">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -40,7 +40,7 @@
    <widget class="QGroupBox" name="params_box">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>50</x>
       <y>10</y>
       <width>201</width>
       <height>211</height>
@@ -75,7 +75,7 @@
       <string>Ending freq.</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="begfreq_textedit">
+    <widget class="QLineEdit" name="beg_freq">
      <property name="geometry">
       <rect>
        <x>100</x>
@@ -84,8 +84,11 @@
        <height>22</height>
       </rect>
      </property>
+     <property name="placeholderText">
+      <string>in Hz</string>
+     </property>
     </widget>
-    <widget class="QLineEdit" name="endfreq_textedit">
+    <widget class="QLineEdit" name="end_freq">
      <property name="geometry">
       <rect>
        <x>100</x>
@@ -94,8 +97,11 @@
        <height>22</height>
       </rect>
      </property>
+     <property name="placeholderText">
+      <string>in Hz</string>
+     </property>
     </widget>
-    <widget class="QLineEdit" name="dur_textedit">
+    <widget class="QLineEdit" name="duration">
      <property name="geometry">
       <rect>
        <x>100</x>
@@ -103,6 +109,9 @@
        <width>91</width>
        <height>22</height>
       </rect>
+     </property>
+     <property name="placeholderText">
+      <string>in sec</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_3">
@@ -118,7 +127,7 @@
       <string>Duration</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="srate_textedit">
+    <widget class="QLineEdit" name="srate">
      <property name="geometry">
       <rect>
        <x>100</x>
@@ -126,6 +135,9 @@
        <width>91</width>
        <height>22</height>
       </rect>
+     </property>
+     <property name="placeholderText">
+      <string>in Hz</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_4">
@@ -141,7 +153,7 @@
       <string>Sampling freq.</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="savesweep_button">
+    <widget class="QPushButton" name="save_button">
      <property name="geometry">
       <rect>
        <x>100</x>
@@ -181,10 +193,10 @@
      </property>
     </widget>
    </widget>
-   <widget class="QPushButton" name="gensweep_button">
+   <widget class="QPushButton" name="gen_button">
     <property name="geometry">
      <rect>
-      <x>305</x>
+      <x>300</x>
       <y>50</y>
       <width>270</width>
       <height>51</height>
@@ -194,10 +206,10 @@
      <string>Generate sweep</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="playsweep_button">
+   <widget class="QPushButton" name="play_button">
     <property name="geometry">
      <rect>
-      <x>305</x>
+      <x>300</x>
       <y>120</y>
       <width>270</width>
       <height>51</height>
@@ -208,17 +220,6 @@
     </property>
    </widget>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>620</width>
-     <height>26</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <customwidgets>
   <customwidget>
