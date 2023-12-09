@@ -1,0 +1,15 @@
+altgraph==0.17.4
+cffi==1.16.0
+numpy==1.26.2
+packaging==23.2
+pefile==2023.2.7
+pycparser==2.21
+pyinstaller==6.2.0
+pyinstaller-hooks-contrib==2023.10
+PyQt5==5.15.10
+PyQt5-Qt5==5.15.2
+PyQt5-sip==12.13.0
+pyqtgraph==0.13.3
+pywin32-ctypes==0.2.2
+scipy==1.11.4
+soundfile==0.12.1
