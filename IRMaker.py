@@ -31,7 +31,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.version_label.setGeometry(QtCore.QRect(10, 710, 55, 21))
         self.version_label.setObjectName("version_label")
         self.version_label.setText("V1.1.0")
-        
+            
         self.layoutWidget = QtWidgets.QWidget(self)
         self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 591, 221))
         self.layoutWidget.setObjectName("layoutWidget")
