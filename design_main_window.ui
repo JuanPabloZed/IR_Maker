@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>720</width>
+    <width>800</width>
     <height>730</height>
    </rect>
   </property>
@@ -51,7 +51,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>591</width>
+      <width>671</width>
       <height>221</height>
      </rect>
     </property>
@@ -64,9 +64,9 @@
        <widget class="QPushButton" name="browsesweep_button">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>9</x>
           <y>20</y>
-          <width>171</width>
+          <width>200</width>
           <height>28</height>
          </rect>
         </property>
@@ -80,9 +80,9 @@
        <widget class="QLineEdit" name="beg_freq">
         <property name="geometry">
          <rect>
-          <x>110</x>
+          <x>119</x>
           <y>55</y>
-          <width>71</width>
+          <width>89</width>
           <height>22</height>
          </rect>
         </property>
@@ -108,9 +108,9 @@
        <widget class="QLineEdit" name="end_freq">
         <property name="geometry">
          <rect>
-          <x>110</x>
+          <x>119</x>
           <y>80</y>
-          <width>71</width>
+          <width>89</width>
           <height>22</height>
          </rect>
         </property>
@@ -150,9 +150,9 @@
        <widget class="QPushButton" name="sweepgen_button">
         <property name="geometry">
          <rect>
-          <x>20</x>
+          <x>19</x>
           <y>125</y>
-          <width>151</width>
+          <width>180</width>
           <height>61</height>
          </rect>
         </property>
@@ -173,9 +173,9 @@
        <widget class="QPushButton" name="loadfolder_button">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>9</x>
           <y>20</y>
-          <width>171</width>
+          <width>201</width>
           <height>28</height>
          </rect>
         </property>
@@ -191,7 +191,7 @@
          <rect>
           <x>10</x>
           <y>60</y>
-          <width>171</width>
+          <width>201</width>
           <height>151</height>
          </rect>
         </property>
@@ -280,7 +280,7 @@
          <rect>
           <x>10</x>
           <y>15</y>
-          <width>171</width>
+          <width>201</width>
           <height>51</height>
          </rect>
         </property>
@@ -296,9 +296,8 @@
          </font>
         </property>
         <property name="text">
-         <string notr="true">Automatic output (creates
-&quot;IR&quot; folder in recordings
-folder)</string>
+         <string notr="true">Automatic output (creates &quot;IR&quot;
+folder in recordings folder)</string>
         </property>
         <property name="iconSize">
          <size>
@@ -326,9 +325,9 @@ folder)</string>
        <widget class="QPushButton" name="browseout_button">
         <property name="geometry">
          <rect>
-          <x>30</x>
+          <x>36</x>
           <y>90</y>
-          <width>131</width>
+          <width>151</width>
           <height>28</height>
          </rect>
         </property>
@@ -373,9 +372,9 @@ folder)</string>
        <widget class="QLineEdit" name="srate">
         <property name="geometry">
          <rect>
-          <x>90</x>
+          <x>100</x>
           <y>130</y>
-          <width>91</width>
+          <width>106</width>
           <height>22</height>
          </rect>
         </property>
@@ -390,7 +389,7 @@ folder)</string>
    <widget class="QSplitter" name="splitter">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>690</x>
       <y>50</y>
       <width>101</width>
       <height>141</height>
@@ -434,7 +433,7 @@ folder)</string>
      <rect>
       <x>10</x>
       <y>240</y>
-      <width>700</width>
+      <width>780</width>
       <height>220</height>
      </rect>
     </property>
@@ -444,7 +443,7 @@ folder)</string>
      <rect>
       <x>10</x>
       <y>480</y>
-      <width>700</width>
+      <width>780</width>
       <height>220</height>
      </rect>
     </property>

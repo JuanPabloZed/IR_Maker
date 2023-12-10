@@ -20,7 +20,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
     def __init__(self,parent=None):
         super(Ui_MainWIndow,self).__init__(parent)
         self.setWindowTitle('IR Maker')
-        Ui_MainWIndow.resize(self,720,730)
+        Ui_MainWIndow.resize(self,800,730)
         self.creators_label = QtWidgets.QLabel(self)
         self.creators_label.setGeometry(QtCore.QRect(240, 710, 471, 21))
         self.creators_label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
@@ -31,9 +31,9 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.version_label.setGeometry(QtCore.QRect(10, 710, 55, 21))
         self.version_label.setObjectName("version_label")
         self.version_label.setText("V1.1.0")
-            
+
         self.layoutWidget = QtWidgets.QWidget(self)
-        self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 591, 221))
+        self.layoutWidget.setGeometry(QtCore.QRect(10, 10,671, 221))
         self.layoutWidget.setObjectName("layoutWidget")
 
         self.boxes_layout = QtWidgets.QHBoxLayout(self.layoutWidget)
@@ -44,13 +44,13 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.sweep_box.setTitle("Sweep")
         
         self.browsesweep_button = QtWidgets.QPushButton(self.sweep_box,clicked = lambda: self.openFileSweep())
-        self.browsesweep_button.setGeometry(QtCore.QRect(10, 20, 171, 28))
+        self.browsesweep_button.setGeometry(QtCore.QRect(9, 20, 200, 28))
         self.browsesweep_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.browsesweep_button.setObjectName("browsesweep_button")
         self.browsesweep_button.setText("Browse sweep file")
         
         self.beg_freq = QtWidgets.QLineEdit(self.sweep_box)
-        self.beg_freq.setGeometry(QtCore.QRect(110, 55, 71, 22))
+        self.beg_freq.setGeometry(QtCore.QRect(119, 55, 89, 22))
         self.beg_freq.setText("")
         self.beg_freq.setDragEnabled(False)
         self.beg_freq.setReadOnly(False)
@@ -60,7 +60,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.beg_freq.setPlaceholderText("in Hz")
 
         self.end_freq = QtWidgets.QLineEdit(self.sweep_box)
-        self.end_freq.setGeometry(QtCore.QRect(110, 80, 71, 22))
+        self.end_freq.setGeometry(QtCore.QRect(119, 80, 89, 22))
         self.end_freq.setText("")
         self.end_freq.setObjectName("end_freq")
         self.end_freq.setPlaceholderText("in Hz")
@@ -76,7 +76,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.endfreq_label.setText("Ending freq.")
         
         self.sweepgen_button = QtWidgets.QPushButton(self.sweep_box,clicked=lambda: self.sweep())
-        self.sweepgen_button.setGeometry(QtCore.QRect(20, 125, 151, 61))
+        self.sweepgen_button.setGeometry(QtCore.QRect(19, 125, 180, 61))
         self.sweepgen_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.sweepgen_button.setObjectName("sweepgen_button")
         self.sweepgen_button.setText("Sweep generator")
@@ -88,13 +88,13 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.response_box.setTitle("Response")
         
         self.loadfolder_button = QtWidgets.QPushButton(self.response_box,clicked=lambda: self.openResponseFolder())
-        self.loadfolder_button.setGeometry(QtCore.QRect(10, 20, 171, 28))
+        self.loadfolder_button.setGeometry(QtCore.QRect(9, 20, 201, 28))
         self.loadfolder_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.loadfolder_button.setObjectName("loadfolder_button")
         self.loadfolder_button.setText("Select recording(s) folder")
         
         self.files_list = QtWidgets.QListView(self.response_box)
-        self.files_list.setGeometry(QtCore.QRect(10, 60, 171, 151))
+        self.files_list.setGeometry(QtCore.QRect(10, 60, 201, 151))
         self.files_list.setStatusTip("")
         self.files_list.setWhatsThis("")
         self.files_list.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
@@ -134,7 +134,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.bitdepth_label.setText("Bit depth")
         
         self.autosave_radio = QtWidgets.QRadioButton(self.output_box, clicked=lambda: self.browseout_button.setEnabled(False))
-        self.autosave_radio.setGeometry(QtCore.QRect(10, 15, 171, 51))
+        self.autosave_radio.setGeometry(QtCore.QRect(10, 15, 201, 51))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -143,9 +143,8 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         font = QtGui.QFont()
         font.setItalic(False)
         self.autosave_radio.setFont(font)
-        self.autosave_radio.setText("Automatic output (creates\n"
-                                    "\"IR\" folder in recordings\n"
-                                    "folder)")
+        self.autosave_radio.setText("Automatic output (creates \"IR\"\n"
+                                    "folder in recordings folder)")
         self.autosave_radio.setIconSize(QtCore.QSize(20, 20))
         self.autosave_radio.setChecked(True)
         self.autosave_radio.setObjectName("autosave_radio")
@@ -156,7 +155,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.customsave_radio.setText("Custom output")
         
         self.browseout_button = QtWidgets.QPushButton(self.output_box,clicked=lambda: self.customSaveOut())
-        self.browseout_button.setGeometry(QtCore.QRect(30, 90, 131, 28))
+        self.browseout_button.setGeometry(QtCore.QRect(36, 90, 151, 28))
         self.browseout_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.browseout_button.setAutoFillBackground(False)
         self.browseout_button.setCheckable(False)
@@ -166,6 +165,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.browseout_button.setFlat(False)
         self.browseout_button.setObjectName("browseout_button")
         self.browseout_button.setText("Browse output")
+        self.browseout_button.setEnabled(False)
         
         self.srate_label = QtWidgets.QLabel(self.output_box)
         self.srate_label.setGeometry(QtCore.QRect(10, 130, 81, 21))
@@ -173,13 +173,13 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.srate_label.setText("Sample rate")
         
         self.srate = QtWidgets.QLineEdit(self.output_box)
-        self.srate.setGeometry(QtCore.QRect(90, 130, 91, 22))
+        self.srate.setGeometry(QtCore.QRect(100, 130, 106, 22))
         self.srate.setObjectName("srate")
         self.srate.setPlaceholderText("in Hz")
         
         self.boxes_layout.addWidget(self.output_box)
         self.splitter = QtWidgets.QSplitter(self)
-        self.splitter.setGeometry(QtCore.QRect(610, 50, 101, 141))
+        self.splitter.setGeometry(QtCore.QRect(690, 50, 101, 141))
         self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setObjectName("splitter")
 
@@ -197,16 +197,16 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         
         self.spectrogram_plot = pg.PlotWidget(self)
         self.spectrogram_plot.setEnabled(True)
-        self.spectrogram_plot.setGeometry(QtCore.QRect(10, 480, 700, 220))
+        self.spectrogram_plot.setGeometry(QtCore.QRect(10, 480, 780, 220))
         self.spectrogram_plot.setObjectName("spectrogram_plot")
         self.spectrogram_plot.setBackground('w')
         self.spectrogram_plot.setVisible(False)
-        self.spectrogram_plot.setTitle('Spectrogram (left channel)')
+        self.spectrogram_plot.setTitle('Spectrogram')
         self.spectrogram_plot.setLabel('bottom','Time',units='s')
         self.spectrogram_plot.setLabel('left','Frequency',units='Hz')
       
         self.ir_plot = pg.PlotWidget(self)
-        self.ir_plot.setGeometry(QtCore.QRect(10, 240, 700, 220))
+        self.ir_plot.setGeometry(QtCore.QRect(10, 240, 780, 220))
         self.ir_plot.setObjectName("ir_plot")
         self.ir_plot.setBackground('w')
         self.ir_plot.setTitle('Waveform')
@@ -214,7 +214,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.ir_plot.setLabel('left', 'Amplitude')
      
         self.spectral_plot = pg.PlotWidget(self)
-        self.spectral_plot.setGeometry(QtCore.QRect(10, 480, 700, 220))
+        self.spectral_plot.setGeometry(QtCore.QRect(10, 480, 780, 220))
         self.spectral_plot.setObjectName("spectral_plot")
         self.spectral_plot.setBackground('w')
         self.spectral_plot.setTitle('Spectrum')
@@ -360,8 +360,10 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
                 i -= 1
             normir = normir[0:i]
             index = argmax(normir)
-            if index > 20:
-                normir = normir[index-20:]
+            if index > 4:
+                normir = normir[index-4:]
+            
+            # normir = smooth(normir,10)
           
             return (normir)
 
@@ -443,7 +445,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
             self.spectral_plot.setVisible(False)
             self.spectrogram_plot.setVisible(True)
             # spectro de la moyenne des deux canaux
-            IR = asarray(data[:,0])
+            IR = (asarray(data[:,0]) + asarray(data[:,1]))/2
             f,t,Sxx = spectrogram(IR,fs=int(self.srate.text()),nfft=len(IR)//50,nperseg=len(IR)//400,scaling='spectrum')
             Sxx = 20*log10(transpose(Sxx))
             img = pg.ImageItem()

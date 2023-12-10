@@ -2,10 +2,10 @@ from numpy import log2,ones,convolve
 
 def normalize(data):
     if data.ndim == 1:
-        normdata = data/max(data)
+        normdata = data/max(abs(data))
     elif data.ndim == 2:
-        maxL = max(data[:,0])
-        maxR = max(data[:,1])
+        maxL = max(abs(data[:,0]))
+        maxR = max(abs(data[:,1]))
         normdata = data/max([maxL,maxR])
     return normdata
 
