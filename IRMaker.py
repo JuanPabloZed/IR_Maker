@@ -10,7 +10,6 @@ from PyQt5.QtMultimedia import QSound
 import pyqtgraph as pg
 from pathlib import Path
 
-# from design_sweep_generator import Ui_SweepGenerator
 from funcs import next_power_of_2, smooth, normalize
 
 import sys
@@ -20,20 +19,22 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
     def __init__(self,parent=None):
         super(Ui_MainWIndow,self).__init__(parent)
         self.setWindowTitle('IR Maker')
-        Ui_MainWIndow.resize(self,720,730)
-        self.creators_label = QtWidgets.QLabel(self)
-        self.creators_label.setGeometry(QtCore.QRect(240, 710, 471, 21))
-        self.creators_label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.creators_label.setObjectName("creators_label")
-        self.creators_label.setText("IR Maker® Developped by Nathan Zwahlen, Benjamin Quiédeville & Hugo Perrier")
-        
-        self.version_label = QtWidgets.QLabel(self)
-        self.version_label.setGeometry(QtCore.QRect(10, 710, 55, 21))
-        self.version_label.setObjectName("version_label")
-        self.version_label.setText("V1.1.0")
-        
+        self.setWindowIcon(QtGui.QIcon("irmaker.png"))
+        Ui_MainWIndow.resize(self,900,720)
+                
+        self.about_button = QtWidgets.QPushButton(self)
+        self.about_button.setGeometry(QtCore.QRect(845, 5, 41, 22))
+        self.about_button.setObjectName("about_label")
+        self.about_button.setFlat(True)
+        self.about_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        font = QtGui.QFont()
+        font.setUnderline(True)
+        self.about_button.setFont(font)
+        self.about_button.setText("About")
+        self.about_button.clicked.connect(lambda: self.aboutDial())
+
         self.layoutWidget = QtWidgets.QWidget(self)
-        self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 591, 221))
+        self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 671, 221))
         self.layoutWidget.setObjectName("layoutWidget")
 
         self.boxes_layout = QtWidgets.QHBoxLayout(self.layoutWidget)
@@ -44,39 +45,35 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.sweep_box.setTitle("Sweep")
         
         self.browsesweep_button = QtWidgets.QPushButton(self.sweep_box,clicked = lambda: self.openFileSweep())
-        self.browsesweep_button.setGeometry(QtCore.QRect(10, 20, 171, 28))
+        self.browsesweep_button.setGeometry(QtCore.QRect(9, 20, 200, 28))
         self.browsesweep_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.browsesweep_button.setObjectName("browsesweep_button")
         self.browsesweep_button.setText("Browse sweep file")
         
         self.beg_freq = QtWidgets.QLineEdit(self.sweep_box)
-        self.beg_freq.setGeometry(QtCore.QRect(110, 55, 71, 22))
-        self.beg_freq.setText("")
-        self.beg_freq.setDragEnabled(False)
-        self.beg_freq.setReadOnly(False)
-        self.beg_freq.setCursorMoveStyle(QtCore.Qt.LogicalMoveStyle)
-        self.beg_freq.setClearButtonEnabled(False)
+        self.beg_freq.setGeometry(QtCore.QRect(123, 55, 89, 22))
+        self.beg_freq.setText("20")
         self.beg_freq.setObjectName("beg_freq")
         self.beg_freq.setPlaceholderText("in Hz")
 
         self.end_freq = QtWidgets.QLineEdit(self.sweep_box)
-        self.end_freq.setGeometry(QtCore.QRect(110, 80, 71, 22))
-        self.end_freq.setText("")
+        self.end_freq.setGeometry(QtCore.QRect(123, 80, 89, 22))
+        self.end_freq.setText("20000")
         self.end_freq.setObjectName("end_freq")
         self.end_freq.setPlaceholderText("in Hz")
         
         self.begfreq_label = QtWidgets.QLabel(self.sweep_box)
-        self.begfreq_label.setGeometry(QtCore.QRect(10, 55, 91, 21))
+        self.begfreq_label.setGeometry(QtCore.QRect(3, 55, 131, 21))
         self.begfreq_label.setObjectName("begfreq_label")
-        self.begfreq_label.setText("Beginning freq.")
+        self.begfreq_label.setText("Beginning freq. (Hz)")
         
         self.endfreq_label = QtWidgets.QLabel(self.sweep_box)
-        self.endfreq_label.setGeometry(QtCore.QRect(10, 80, 91, 21))
+        self.endfreq_label.setGeometry(QtCore.QRect(3, 80, 101, 21))
         self.endfreq_label.setObjectName("endfreq_label")
-        self.endfreq_label.setText("Ending freq.")
+        self.endfreq_label.setText("Ending freq. (Hz)")
         
         self.sweepgen_button = QtWidgets.QPushButton(self.sweep_box,clicked=lambda: self.sweep())
-        self.sweepgen_button.setGeometry(QtCore.QRect(20, 125, 151, 61))
+        self.sweepgen_button.setGeometry(QtCore.QRect(19, 125, 180, 61))
         self.sweepgen_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.sweepgen_button.setObjectName("sweepgen_button")
         self.sweepgen_button.setText("Sweep generator")
@@ -88,13 +85,13 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.response_box.setTitle("Response")
         
         self.loadfolder_button = QtWidgets.QPushButton(self.response_box,clicked=lambda: self.openResponseFolder())
-        self.loadfolder_button.setGeometry(QtCore.QRect(10, 20, 171, 28))
+        self.loadfolder_button.setGeometry(QtCore.QRect(9, 20, 201, 28))
         self.loadfolder_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.loadfolder_button.setObjectName("loadfolder_button")
         self.loadfolder_button.setText("Select recording(s) folder")
         
         self.files_list = QtWidgets.QListView(self.response_box)
-        self.files_list.setGeometry(QtCore.QRect(10, 60, 171, 151))
+        self.files_list.setGeometry(QtCore.QRect(10, 60, 201, 151))
         self.files_list.setStatusTip("")
         self.files_list.setWhatsThis("")
         self.files_list.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
@@ -105,8 +102,8 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.files_list.setModel(self.fileModel)
         self.files_list.selectionModel().selectionChanged.connect(lambda: self.selectInList())
 
-
         self.boxes_layout.addWidget(self.response_box)
+
         self.output_box = QtWidgets.QGroupBox(self.layoutWidget)
         self.output_box.setObjectName("output_box")
         self.output_box.setTitle("Output")
@@ -126,7 +123,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.bitdepth_combo.setItemText(0, "16 bit")
         self.bitdepth_combo.setItemText(1, "24 bit")
         self.bitdepth_combo.setItemText(2, "32 bit") 
-        self.bitdepth_combo.setCurrentIndex(0)     
+        self.bitdepth_combo.setCurrentIndex(1)     
 
         self.bitdepth_label = QtWidgets.QLabel(self.output_box)
         self.bitdepth_label.setGeometry(QtCore.QRect(10, 165, 51, 21))
@@ -134,7 +131,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.bitdepth_label.setText("Bit depth")
         
         self.autosave_radio = QtWidgets.QRadioButton(self.output_box, clicked=lambda: self.browseout_button.setEnabled(False))
-        self.autosave_radio.setGeometry(QtCore.QRect(10, 15, 171, 51))
+        self.autosave_radio.setGeometry(QtCore.QRect(10, 15, 201, 51))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -143,9 +140,8 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         font = QtGui.QFont()
         font.setItalic(False)
         self.autosave_radio.setFont(font)
-        self.autosave_radio.setText("Automatic output (creates\n"
-                                    "\"IR\" folder in recordings\n"
-                                    "folder)")
+        self.autosave_radio.setText("Automatic output (creates \"IR\"\n"
+                                    "folder in recordings folder)")
         self.autosave_radio.setIconSize(QtCore.QSize(20, 20))
         self.autosave_radio.setChecked(True)
         self.autosave_radio.setObjectName("autosave_radio")
@@ -156,57 +152,50 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.customsave_radio.setText("Custom output")
         
         self.browseout_button = QtWidgets.QPushButton(self.output_box,clicked=lambda: self.customSaveOut())
-        self.browseout_button.setGeometry(QtCore.QRect(30, 90, 131, 28))
+        self.browseout_button.setGeometry(QtCore.QRect(36, 90, 151, 28))
         self.browseout_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.browseout_button.setAutoFillBackground(False)
-        self.browseout_button.setCheckable(False)
-        self.browseout_button.setChecked(False)
-        self.browseout_button.setAutoDefault(False)
-        self.browseout_button.setDefault(False)
-        self.browseout_button.setFlat(False)
         self.browseout_button.setObjectName("browseout_button")
         self.browseout_button.setText("Browse output")
+        self.browseout_button.setEnabled(False)
         
         self.srate_label = QtWidgets.QLabel(self.output_box)
-        self.srate_label.setGeometry(QtCore.QRect(10, 130, 81, 21))
+        self.srate_label.setGeometry(QtCore.QRect(3, 130, 111, 21))
         self.srate_label.setObjectName("srate_label")
-        self.srate_label.setText("Sample rate")
+        self.srate_label.setText("Sample rate (Hz)")
         
         self.srate = QtWidgets.QLineEdit(self.output_box)
-        self.srate.setGeometry(QtCore.QRect(90, 130, 91, 22))
+        self.srate.setGeometry(QtCore.QRect(108, 130, 106, 22))
         self.srate.setObjectName("srate")
         self.srate.setPlaceholderText("in Hz")
-        
-        self.boxes_layout.addWidget(self.output_box)
-        self.splitter = QtWidgets.QSplitter(self)
-        self.splitter.setGeometry(QtCore.QRect(610, 50, 101, 141))
-        self.splitter.setOrientation(QtCore.Qt.Vertical)
-        self.splitter.setObjectName("splitter")
 
-        self.createir_button = QtWidgets.QPushButton(self.splitter,clicked=lambda: self.programme())
-        self.createir_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.boxes_layout.addWidget(self.output_box)
+
+        self.createir_button = QtWidgets.QPushButton(self,clicked=lambda: self.programme())
         self.createir_button.setObjectName("createir_button")
+        self.createir_button.setGeometry(690,30,201,81)
         self.createir_button.setText("Create IR")
         self.createir_button.setEnabled(False)
         
-        self.playir_button = QtWidgets.QPushButton(self.splitter,clicked=lambda: self.do_nothing())
+        self.playir_button = QtWidgets.QPushButton(self,clicked = lambda: self.do_nothing())
+        self.playir_button.setGeometry(690, 128, 201, 81)
         self.playir_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.playir_button.setObjectName("playir_button")
         self.playir_button.setText("Play IR")
-        self.playir_button.setVisible(False)
+        self.playir_button.setEnabled(False)
         
         self.spectrogram_plot = pg.PlotWidget(self)
         self.spectrogram_plot.setEnabled(True)
-        self.spectrogram_plot.setGeometry(QtCore.QRect(10, 480, 700, 220))
+        self.spectrogram_plot.setGeometry(QtCore.QRect(10, 480, 880, 230))
         self.spectrogram_plot.setObjectName("spectrogram_plot")
         self.spectrogram_plot.setBackground('w')
         self.spectrogram_plot.setVisible(False)
-        self.spectrogram_plot.setTitle('Spectrogram (left channel)')
+        self.spectrogram_plot.setTitle('Spectrogram')
         self.spectrogram_plot.setLabel('bottom','Time',units='s')
         self.spectrogram_plot.setLabel('left','Frequency',units='Hz')
       
         self.ir_plot = pg.PlotWidget(self)
-        self.ir_plot.setGeometry(QtCore.QRect(10, 240, 700, 220))
+        self.ir_plot.setGeometry(QtCore.QRect(10, 240, 880, 230))
         self.ir_plot.setObjectName("ir_plot")
         self.ir_plot.setBackground('w')
         self.ir_plot.setTitle('Waveform')
@@ -214,7 +203,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.ir_plot.setLabel('left', 'Amplitude')
      
         self.spectral_plot = pg.PlotWidget(self)
-        self.spectral_plot.setGeometry(QtCore.QRect(10, 480, 700, 220))
+        self.spectral_plot.setGeometry(QtCore.QRect(10, 480, 880, 230))
         self.spectral_plot.setObjectName("spectral_plot")
         self.spectral_plot.setBackground('w')
         self.spectral_plot.setTitle('Spectrum')
@@ -228,7 +217,6 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.save_name = '' # for autosave
         self.save_path = '' # for custom save
 
-        
 
     # functions section
     def programme(self):
@@ -257,17 +245,22 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.temporalgraph_fct(ir)
         self.spectralgraph_fct(ir)
 
-        self.playir_button.setVisible(True)
         self.playir_button.clicked.disconnect()
         self.playir_button.clicked.connect(lambda: self.playIR())
+        self.playir_button.setEnabled(True)
+
         return
     
     def do_nothing(self):
         return
 
+    def aboutDial(self):
+        dialog = abtDial(self)
+        dialog.show()
+
     def playIR(self):
-        data = self.outpath
-        QSound.play(data)
+        datapath = self.outpath
+        QSound.play(datapath)
         return
     
     def deconvolver(self):
@@ -360,8 +353,10 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
                 i -= 1
             normir = normir[0:i]
             index = argmax(normir)
-            if index > 20:
-                normir = normir[index-20:]
+            if index > 4:
+                normir = normir[index-4:]
+            
+            # normir = smooth(normir,10)
           
             return (normir)
 
@@ -443,7 +438,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
             self.spectral_plot.setVisible(False)
             self.spectrogram_plot.setVisible(True)
             # spectro de la moyenne des deux canaux
-            IR = asarray(data[:,0])
+            IR = (asarray(data[:,0]) + asarray(data[:,1]))/2
             f,t,Sxx = spectrogram(IR,fs=int(self.srate.text()),nfft=len(IR)//50,nperseg=len(IR)//400,scaling='spectrum')
             Sxx = 20*log10(transpose(Sxx))
             img = pg.ImageItem()
@@ -523,6 +518,7 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(Ui_SweepGenerator,self).__init__(parent)
         self.setWindowTitle('Sweep generator')
+        self.setWindowIcon(QtGui.QIcon('irmaker.ico'))
         Ui_SweepGenerator.resize(self,620,630)
        
         self.spectro_plot = pg.PlotWidget(self)
@@ -548,60 +544,59 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         self.params_box.setTitle("Sweep parameters")
       
         self.label = QtWidgets.QLabel(self.params_box)
-        self.label.setGeometry(QtCore.QRect(10, 30, 91, 21))
+        self.label.setGeometry(QtCore.QRect(10, 30, 121, 21))
         self.label.setObjectName("label")
-        self.label.setText("Beginning freq.")
+        self.label.setText("Beginning freq. (Hz)")
       
         self.label_2 = QtWidgets.QLabel(self.params_box)
-        self.label_2.setGeometry(QtCore.QRect(10, 60, 91, 21))
+        self.label_2.setGeometry(QtCore.QRect(10, 60, 121, 21))
         self.label_2.setObjectName("label_2")
-        self.label_2.setText("Ending freq.")
+        self.label_2.setText("Ending freq. (Hz)")
       
         self.beg_freq = QtWidgets.QLineEdit(self.params_box)
-        self.beg_freq.setGeometry(QtCore.QRect(100, 30, 91, 22))
+        self.beg_freq.setGeometry(QtCore.QRect(130, 30, 61, 22))
         self.beg_freq.setObjectName("beg_freq")
+        self.beg_freq.setText("20")
         self.beg_freq.setPlaceholderText("in Hz")
       
         self.end_freq = QtWidgets.QLineEdit(self.params_box)
-        self.end_freq.setGeometry(QtCore.QRect(100, 60, 91, 22))
+        self.end_freq.setGeometry(QtCore.QRect(130, 60, 61, 22))
         self.end_freq.setObjectName("end_freq")
+        self.end_freq.setText("20000")
         self.end_freq.setPlaceholderText("in Hz")
       
         self.duration = QtWidgets.QLineEdit(self.params_box)
-        self.duration.setGeometry(QtCore.QRect(100, 90, 91, 22))
+        self.duration.setGeometry(QtCore.QRect(130, 90, 61, 22))
         self.duration.setObjectName("duration")
+        self.duration.setText("12")
         self.duration.setPlaceholderText("in sec")
       
         self.label_3 = QtWidgets.QLabel(self.params_box)
-        self.label_3.setGeometry(QtCore.QRect(10, 90, 91, 21))
+        self.label_3.setGeometry(QtCore.QRect(10, 90, 121, 21))
         self.label_3.setObjectName("label_3")
-        self.label_3.setText("Duration")
+        self.label_3.setText("Duration (sec)")
         
         self.srate = QtWidgets.QLineEdit(self.params_box)
-        self.srate.setGeometry(QtCore.QRect(100, 120, 91, 22))
+        self.srate.setGeometry(QtCore.QRect(130, 120, 61, 22))
         self.srate.setObjectName("srate")
+        self.srate.setText("48000")
         self.srate.setPlaceholderText("in Hz")
         
         self.label_4 = QtWidgets.QLabel(self.params_box)
-        self.label_4.setGeometry(QtCore.QRect(10, 120, 91, 21))
+        self.label_4.setGeometry(QtCore.QRect(10, 120, 121, 21))
         self.label_4.setObjectName("label_4")
-        self.label_4.setText("Sampling freq.")
+        self.label_4.setText("Sample rate (Hz)")
         
         self.save_button = QtWidgets.QPushButton(self.params_box,clicked=lambda: self.saveFile())
-        self.save_button.setGeometry(QtCore.QRect(100, 170, 93, 28))
+        self.save_button.setGeometry(QtCore.QRect(10, 170, 181, 28))
         self.save_button.setObjectName("save_button")
         self.save_button.setText("Browse...")
         
         self.label_5 = QtWidgets.QLabel(self.params_box)
-        self.label_5.setGeometry(QtCore.QRect(10, 170, 91, 28))
+        self.label_5.setGeometry(QtCore.QRect(0, 145, 201, 28))
         self.label_5.setObjectName("label_5")
         self.label_5.setText("Saving location")
-        
-        self.line = QtWidgets.QFrame(self.params_box)
-        self.line.setGeometry(QtCore.QRect(30, 140, 141, 41))
-        self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line.setObjectName("line")
+        self.label_5.setAlignment(QtCore.Qt.AlignCenter)
 
         self.gen_button = QtWidgets.QPushButton(self,clicked=lambda: self.sweep())
         self.gen_button.setGeometry(QtCore.QRect(300, 50, 270, 51))
@@ -691,8 +686,59 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         self.save_loc=fileName
         self.save_button.setText(Path(fileName).name)
         return
-   
-app = QtWidgets.QApplication(sys.argv)
-main_window = Ui_MainWIndow()
-main_window.show()
-app.exec_()
+
+class abtDial(QtWidgets.QMainWindow):
+    def __init__(self,parent=None):
+        super(abtDial,self).__init__(parent)
+        self.setWindowTitle('About')
+        self.setWindowIcon(QtGui.QIcon('irmaker.ico'))
+        self.resize(400,300)
+        self.label = QtWidgets.QLabel(self)
+        self.label.setGeometry(QtCore.QRect(10, 260, 380, 16))
+        self.label.setAlignment(QtCore.Qt.AlignHCenter)
+        self.label.setObjectName("label")
+        self.label.setText('Version 1.0.0')
+
+        self.label_2 = QtWidgets.QLabel(self)
+        self.label_2.setGeometry(QtCore.QRect(140, 10, 120, 120))
+        self.label_2.setText("")
+        self.label_2.setPixmap(QtGui.QPixmap("_internal\irmaker.png"))
+        self.label_2.setScaledContents(True)
+        self.label_2.setObjectName("label_2")
+
+        self.label_3 = QtWidgets.QLabel(self)
+        self.label_3.setGeometry(QtCore.QRect(170, 130, 61, 16))
+        self.label_3.setObjectName("label_3")
+        self.label_3.setText('IR Maker™')
+
+        self.label_5 = QtWidgets.QLabel(self)
+        self.label_5.setGeometry(QtCore.QRect(35, 222, 89, 16))
+        self.label_5.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label_5.setObjectName("label_5")
+        self.label_5.setText('Git repository : ')
+
+        self.label_6 = QtWidgets.QLabel(self)
+        self.label_6.setGeometry(QtCore.QRect(123, 222, 248, 16))
+        font = QtGui.QFont()
+        font.setUnderline(True)
+        self.label_6.setFont(font)
+        self.label_6.setTextFormat(QtCore.Qt.MarkdownText)
+        self.label_6.setText('https://github.com/JuanPabloZed/IR_Maker')
+        self.label_6.setOpenExternalLinks(True)
+        self.label_6.setObjectName("label_6")
+
+        self.label_7 = QtWidgets.QLabel(self)
+        self.label_7.setGeometry(QtCore.QRect(10, 170, 380, 34))
+        self.label_7.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_7.setObjectName("label_7")
+        self.label_7.setText("Copyright (c) 2023 Nathan Zwahlen, Benjamin Quiédeville\n& Hugo Perrier")
+
+
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    main_window = Ui_MainWIndow()
+    main_window.show()
+    app.exec_()
+
+if __name__ == '__main__':
+    main()

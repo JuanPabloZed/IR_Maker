@@ -27,7 +27,9 @@ Be sure to use the same sample rate for the ESS, the response and the IR to get 
 /!\ COMPILING INTO .exe /!\
 
 If you want to make a .exe out of this code, you can by installing the different necessary modules contained in requirements.txt, and then typing the following command in cmd: 
-pyinstaller --noconfirm --onefile --windowed "path\of\the\output.exe\file"
 
+pyinstaller --noconfirm --onedir --windowed --icon "absolute/path/to/irmaker.ico" --name "IR Maker" --add-data "absolute/path/to/irmaker.png;."  "absolute/path/to/IRMaker.py"
+
+This will create a "build" and a "dist" folder inside your project folder. You will find the .exe to dist/IR Maker/IR Maker.exe !
 
 Thank you for using our application !
