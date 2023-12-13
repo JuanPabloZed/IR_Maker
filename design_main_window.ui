@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>900</width>
     <height>730</height>
    </rect>
   </property>
@@ -20,7 +20,7 @@
    <widget class="QLabel" name="creators_label">
     <property name="geometry">
      <rect>
-      <x>240</x>
+      <x>420</x>
       <y>710</y>
       <width>471</width>
       <height>21</height>
@@ -80,14 +80,17 @@
        <widget class="QLineEdit" name="beg_freq">
         <property name="geometry">
          <rect>
-          <x>119</x>
+          <x>123</x>
           <y>55</y>
           <width>89</width>
           <height>22</height>
          </rect>
         </property>
-        <property name="text">
+        <property name="inputMask">
          <string/>
+        </property>
+        <property name="text">
+         <string>20</string>
         </property>
         <property name="dragEnabled">
          <bool>false</bool>
@@ -108,14 +111,14 @@
        <widget class="QLineEdit" name="end_freq">
         <property name="geometry">
          <rect>
-          <x>119</x>
+          <x>123</x>
           <y>80</y>
           <width>89</width>
           <height>22</height>
          </rect>
         </property>
         <property name="text">
-         <string/>
+         <string>20000</string>
         </property>
         <property name="placeholderText">
          <string>in Hz</string>
@@ -124,27 +127,27 @@
        <widget class="QLabel" name="begfreq_label">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>3</x>
           <y>55</y>
-          <width>91</width>
+          <width>131</width>
           <height>21</height>
          </rect>
         </property>
         <property name="text">
-         <string>Beginning freq.</string>
+         <string>Beginning freq. (Hz)</string>
         </property>
        </widget>
        <widget class="QLabel" name="endfreq_label">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>3</x>
           <y>80</y>
-          <width>91</width>
+          <width>101</width>
           <height>21</height>
          </rect>
         </property>
         <property name="text">
-         <string>Ending freq.</string>
+         <string>Ending freq. (Hz)</string>
         </property>
        </widget>
        <widget class="QPushButton" name="sweepgen_button">
@@ -244,7 +247,7 @@
          <cursorShape>PointingHandCursor</cursorShape>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <item>
          <property name="text">
@@ -359,24 +362,27 @@ folder in recordings folder)</string>
        <widget class="QLabel" name="srate_label">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>3</x>
           <y>130</y>
-          <width>81</width>
+          <width>111</width>
           <height>21</height>
          </rect>
         </property>
         <property name="text">
-         <string>Sample rate</string>
+         <string>Sample rate (Hz)</string>
         </property>
        </widget>
        <widget class="QLineEdit" name="srate">
         <property name="geometry">
          <rect>
-          <x>100</x>
+          <x>108</x>
           <y>130</y>
           <width>106</width>
           <height>22</height>
          </rect>
+        </property>
+        <property name="text">
+         <string>48000</string>
         </property>
         <property name="placeholderText">
          <string>in Hz</string>
@@ -386,35 +392,6 @@ folder in recordings folder)</string>
      </item>
     </layout>
    </widget>
-   <widget class="QSplitter" name="splitter">
-    <property name="geometry">
-     <rect>
-      <x>690</x>
-      <y>50</y>
-      <width>101</width>
-      <height>141</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Vertical</enum>
-    </property>
-    <widget class="QPushButton" name="createir_button">
-     <property name="cursor">
-      <cursorShape>PointingHandCursor</cursorShape>
-     </property>
-     <property name="text">
-      <string>Create IR</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="playir_button">
-     <property name="cursor">
-      <cursorShape>PointingHandCursor</cursorShape>
-     </property>
-     <property name="text">
-      <string>Play IR</string>
-     </property>
-    </widget>
-   </widget>
    <widget class="PlotWidget" name="spectrogram_plot">
     <property name="enabled">
      <bool>true</bool>
@@ -423,8 +400,8 @@ folder in recordings folder)</string>
      <rect>
       <x>10</x>
       <y>480</y>
-      <width>700</width>
-      <height>220</height>
+      <width>880</width>
+      <height>230</height>
      </rect>
     </property>
    </widget>
@@ -433,9 +410,21 @@ folder in recordings folder)</string>
      <rect>
       <x>10</x>
       <y>240</y>
-      <width>780</width>
-      <height>220</height>
+      <width>880</width>
+      <height>230</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>16777215</width>
+      <height>16777215</height>
+     </size>
     </property>
    </widget>
    <widget class="PlotWidget" name="spectral_plot">
@@ -443,9 +432,58 @@ folder in recordings folder)</string>
      <rect>
       <x>10</x>
       <y>480</y>
-      <width>780</width>
-      <height>220</height>
+      <width>880</width>
+      <height>230</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="playir_button">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>128</y>
+      <width>201</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+      <strikeout>false</strikeout>
+      <kerning>true</kerning>
+     </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="text">
+     <string>Play IR</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="createir_button">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>30</y>
+      <width>201</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="text">
+     <string>Create IR</string>
     </property>
    </widget>
   </widget>
