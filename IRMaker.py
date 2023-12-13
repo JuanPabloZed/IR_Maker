@@ -19,17 +19,19 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
     def __init__(self,parent=None):
         super(Ui_MainWIndow,self).__init__(parent)
         self.setWindowTitle('IR Maker')
-        Ui_MainWIndow.resize(self,900,730)
-        self.creators_label = QtWidgets.QLabel(self)
-        self.creators_label.setGeometry(QtCore.QRect(240, 710, 471, 21))
-        self.creators_label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.creators_label.setObjectName("creators_label")
-        self.creators_label.setText("IR Maker® Developped by Nathan Zwahlen, Benjamin Quiédeville & Hugo Perrier")
-        
-        self.version_label = QtWidgets.QLabel(self)
-        self.version_label.setGeometry(QtCore.QRect(10, 710, 55, 21))
-        self.version_label.setObjectName("version_label")
-        self.version_label.setText("V1.1.0")
+        self.setWindowIcon(QtGui.QIcon("irmaker.png"))
+        Ui_MainWIndow.resize(self,900,720)
+                
+        self.about_button = QtWidgets.QPushButton(self)
+        self.about_button.setGeometry(QtCore.QRect(845, 5, 41, 22))
+        self.about_button.setObjectName("about_label")
+        self.about_button.setFlat(True)
+        self.about_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        font = QtGui.QFont()
+        font.setUnderline(True)
+        self.about_button.setFont(font)
+        self.about_button.setText("About")
+        self.about_button.clicked.connect(lambda: self.aboutDial())
 
         self.layoutWidget = QtWidgets.QWidget(self)
         self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 671, 221))
@@ -251,6 +253,10 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
     
     def do_nothing(self):
         return
+
+    def aboutDial(self):
+        dialog = abtDial(self)
+        dialog.show()
 
     def playIR(self):
         datapath = self.outpath
@@ -512,6 +518,7 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(Ui_SweepGenerator,self).__init__(parent)
         self.setWindowTitle('Sweep generator')
+        self.setWindowIcon(QtGui.QIcon('irmaker.ico'))
         Ui_SweepGenerator.resize(self,620,630)
        
         self.spectro_plot = pg.PlotWidget(self)
@@ -679,7 +686,54 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         self.save_loc=fileName
         self.save_button.setText(Path(fileName).name)
         return
-   
+
+class abtDial(QtWidgets.QMainWindow):
+    def __init__(self,parent=None):
+        super(abtDial,self).__init__(parent)
+        self.setWindowTitle('About')
+        self.setWindowIcon(QtGui.QIcon('irmaker.ico'))
+        self.resize(400,300)
+        self.label = QtWidgets.QLabel(self)
+        self.label.setGeometry(QtCore.QRect(10, 260, 380, 16))
+        self.label.setAlignment(QtCore.Qt.AlignHCenter)
+        self.label.setObjectName("label")
+        self.label.setText('Version 1.0.0')
+
+        self.label_2 = QtWidgets.QLabel(self)
+        self.label_2.setGeometry(QtCore.QRect(140, 10, 120, 120))
+        self.label_2.setText("")
+        self.label_2.setPixmap(QtGui.QPixmap("_internal\irmaker.png"))
+        self.label_2.setScaledContents(True)
+        self.label_2.setObjectName("label_2")
+
+        self.label_3 = QtWidgets.QLabel(self)
+        self.label_3.setGeometry(QtCore.QRect(170, 130, 61, 16))
+        self.label_3.setObjectName("label_3")
+        self.label_3.setText('IR Maker™')
+
+        self.label_5 = QtWidgets.QLabel(self)
+        self.label_5.setGeometry(QtCore.QRect(35, 222, 89, 16))
+        self.label_5.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label_5.setObjectName("label_5")
+        self.label_5.setText('Git repository : ')
+
+        self.label_6 = QtWidgets.QLabel(self)
+        self.label_6.setGeometry(QtCore.QRect(123, 222, 248, 16))
+        font = QtGui.QFont()
+        font.setUnderline(True)
+        self.label_6.setFont(font)
+        self.label_6.setTextFormat(QtCore.Qt.MarkdownText)
+        self.label_6.setText('https://github.com/JuanPabloZed/IR_Maker')
+        self.label_6.setOpenExternalLinks(True)
+        self.label_6.setObjectName("label_6")
+
+        self.label_7 = QtWidgets.QLabel(self)
+        self.label_7.setGeometry(QtCore.QRect(10, 170, 380, 34))
+        self.label_7.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_7.setObjectName("label_7")
+        self.label_7.setText("Copyright (c) 2023 Nathan Zwahlen, Benjamin Quiédeville\n& Hugo Perrier")
+
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
     main_window = Ui_MainWIndow()
