@@ -353,8 +353,8 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
                 i -= 1
             normir = normir[0:i]
             index = argmax(normir)
-            if index > 4:
-                normir = normir[index-4:]
+            if index > 10:
+                normir = normir[index-10:]
             
             # normir = smooth(normir,10)
           
