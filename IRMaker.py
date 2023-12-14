@@ -702,7 +702,7 @@ class abtDial(QtWidgets.QMainWindow):
         self.label_2 = QtWidgets.QLabel(self)
         self.label_2.setGeometry(QtCore.QRect(140, 10, 120, 120))
         self.label_2.setText("")
-        self.label_2.setPixmap(QtGui.QPixmap("_internal\irmaker.png"))
+        self.label_2.setPixmap(QtGui.QPixmap("irmaker.png"))
         self.label_2.setScaledContents(True)
         self.label_2.setObjectName("label_2")
 
