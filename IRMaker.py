@@ -20,7 +20,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         super(Ui_MainWIndow,self).__init__(parent)
         self.setWindowTitle('IR Maker')
         self.setWindowIcon(QtGui.QIcon("irmaker.png"))
-        Ui_MainWIndow.resize(self,900,720)
+        self.setFixedSize(900,720)
                 
         self.about_button = QtWidgets.QPushButton(self)
         self.about_button.setGeometry(QtCore.QRect(845, 5, 41, 22))
@@ -519,7 +519,7 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         super(Ui_SweepGenerator,self).__init__(parent)
         self.setWindowTitle('Sweep generator')
         self.setWindowIcon(QtGui.QIcon('irmaker.ico'))
-        Ui_SweepGenerator.resize(self,620,630)
+        self.setFixedSize(620,630)
        
         self.spectro_plot = pg.PlotWidget(self)
         self.spectro_plot.setEnabled(True)
@@ -692,7 +692,7 @@ class abtDial(QtWidgets.QMainWindow):
         super(abtDial,self).__init__(parent)
         self.setWindowTitle('About')
         self.setWindowIcon(QtGui.QIcon('irmaker.ico'))
-        self.resize(400,300)
+        self.setFixedSize(400,300)
         self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(QtCore.QRect(10, 260, 380, 16))
         self.label.setAlignment(QtCore.Qt.AlignHCenter)
