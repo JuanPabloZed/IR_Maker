@@ -1,4 +1,4 @@
-from numpy import array,log,exp,sin,pi,int16,flip,column_stack,int32,float32,argmax,max as maax,asarray,pad,blackman,log10,min as miin,transpose,size as siize,shape
+from numpy import array,log,exp,sin,pi,int16,flip,column_stack,int32,float32,argmax,max as maax,asarray,pad,blackman,log10,min as miin,transpose,size as siize,shape,floor
 from numpy.fft import rfft,rfftfreq
 
 from scipy.io.wavfile import read,write as wriite
@@ -55,12 +55,14 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.beg_freq.setText("20")
         self.beg_freq.setObjectName("beg_freq")
         self.beg_freq.setPlaceholderText("in Hz")
+        self.beg_freq.textChanged.connect(lambda: self.check_all())
 
         self.end_freq = QtWidgets.QLineEdit(self.sweep_box)
         self.end_freq.setGeometry(QtCore.QRect(123, 80, 89, 22))
         self.end_freq.setText("20000")
         self.end_freq.setObjectName("end_freq")
         self.end_freq.setPlaceholderText("in Hz")
+        self.end_freq.textChanged.connect(lambda: self.check_all())
         
         self.begfreq_label = QtWidgets.QLabel(self.sweep_box)
         self.begfreq_label.setGeometry(QtCore.QRect(3, 55, 131, 21))
@@ -101,6 +103,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.fileModel = QtWidgets.QFileSystemModel()
         self.files_list.setModel(self.fileModel)
         self.files_list.selectionModel().selectionChanged.connect(lambda: self.selectInList())
+        self.noselec = 1
 
         self.boxes_layout.addWidget(self.response_box)
 
@@ -112,6 +115,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.mpt_checkbox.setGeometry(QtCore.QRect(10, 190, 101, 20))
         self.mpt_checkbox.setObjectName("mpt_checkbox")
         self.mpt_checkbox.setText("MP transform")
+        self.mpt_checkbox.stateChanged.connect(lambda: self.err_mess())
 
         self.bitdepth_combo = QtWidgets.QComboBox(self.output_box)
         self.bitdepth_combo.setGeometry(QtCore.QRect(70, 165, 73, 22))
@@ -145,6 +149,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.autosave_radio.setIconSize(QtCore.QSize(20, 20))
         self.autosave_radio.setChecked(True)
         self.autosave_radio.setObjectName("autosave_radio")
+        self.autosave_radio.toggled.connect(lambda: self.check_all())
 
         self.customsave_radio = QtWidgets.QRadioButton(self.output_box,clicked=lambda: self.browseout_button.setEnabled(True))
         self.customsave_radio.setGeometry(QtCore.QRect(10, 70, 111, 20))
@@ -168,6 +173,8 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.srate.setGeometry(QtCore.QRect(108, 130, 106, 22))
         self.srate.setObjectName("srate")
         self.srate.setPlaceholderText("in Hz")
+        self.srate_ss = self.srate.styleSheet()
+        self.srate.textChanged.connect(lambda: self.check_all())
 
         self.boxes_layout.addWidget(self.output_box)
 
@@ -217,10 +224,51 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.save_name = '' # for autosave
         self.save_path = '' # for custom save
 
+    def check_all(self):
+        if self.customsave_radio.isChecked() == False:
+        # if ONE thing not done, disable create button
+            if self.browsesweep_button.text() == "Browse sweep file" or self.browsesweep_button.text() == '' \
+                or self.beg_freq.text() == '' or self.beg_freq.text() == '0'\
+                or self.end_freq.text() == '' or self.end_freq.text() == '0'\
+                or self.noselec == 1\
+                or self.srate.text() == '' or self.srate.text() == '0':
+
+                self.createir_button.setEnabled(False)
+            # if ALL things done, enable create button
+            elif self.browsesweep_button.text() != "Browse sweep file" and self.browsesweep_button.text() != '' \
+                and self.beg_freq.text() != '' and self.beg_freq.text() != '0'\
+                and self.end_freq.text() != '' and self.end_freq.text() != '0'\
+                and self.noselec != 1\
+                and self.srate.text() != '' and self.srate.text() != '0':
+
+                self.createir_button.setEnabled(True)
+
+        elif self.customsave_radio.isChecked() == True:
+        # if ONE thing not done, disable create button
+            if self.browsesweep_button.text() == "Browse sweep file" or self.browsesweep_button.text() == '' \
+                or self.beg_freq.text() == '' or self.beg_freq.text() == '0'\
+                or self.end_freq.text() == '' or self.end_freq.text() == '0'\
+                or self.noselec == 1\
+                or self.browseout_button.text() == "Browse output" or self.browseout_button.text() == ''\
+                or self.srate.text() == '' or self.srate.text() == '0':
+
+                self.createir_button.setEnabled(False)
+            # if ALL things done, enable create button
+            elif self.browsesweep_button.text() != "Browse sweep file" and self.browsesweep_button.text() != '' \
+                and self.beg_freq.text() != '' and self.beg_freq.text() != '0'\
+                and self.end_freq.text() != '' and self.end_freq.text() != '0'\
+                and self.noselec != 1\
+                and self.browseout_button.text() != "Browse output" and self.browseout_button.text() != ''\
+                and self.srate.text() != '' and self.srate.text() != '0':
+
+                self.createir_button.setEnabled(True)
 
     # functions section
     def programme(self):
         # compute the IR
+        ### ERRORS MANAGEMENT ###
+
+           
         ir = self.deconvolver()
         # custom path or auto path for saving IR file
         self.outpath = ''
@@ -250,7 +298,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.playir_button.setEnabled(True)
 
         return
-    
+
     def do_nothing(self):
         return
 
@@ -266,7 +314,11 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
     def deconvolver(self):
         # load files
         _, outfile = read(self.recordfile_path, mmap=False)
-    
+        print(shape(outfile))
+        if outfile.ndim == 2:
+            if shape(outfile)[1] > 2:
+                QtWidgets.QMessageBox.critical(self,"Error","Multichannel files not supported.\nPlease select a response file in mono or stereo only.")
+                return
         # sweep read
         ress, ess1 = read(self.sweep_path)
         f1 = int(self.beg_freq.text())
@@ -274,9 +326,9 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         # if sweep in stereo format
         if ess1.ndim == 2 :
             ess = ess1[:,0] # converting to mono
-        else : 
+        elif ess1.ndim == 1 : 
             ess = ess1  # don't touch anything
-    
+        
         # Sweep parameters for theoretical inverse convolution
         R = log(f2/f1)   # sweep rate
         T = len(ess)/ress   # duration (s)
@@ -357,6 +409,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
                 normir = normir[index-10:]
             
             # normir = smooth(normir,10)
+                
           
             return (normir)
 
@@ -464,12 +517,13 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
             return
         
     def selectInList(self):
-        self.createir_button.setEnabled(True)
+        self.noselec=0
         for index in self.files_list.selectedIndexes():
             recordName = self.files_list.model().fileName(index)
             self.recordfile_path = self.files_list.model().filePath(index)
             print(self.recordfile_path)
         self.save_name = Path(recordName).stem + ' - IR.wav'
+        self.check_all()
         return
 
     def openFileSweep(self):
@@ -478,10 +532,8 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         if test.ndim == 2 :
             _,c = shape(test)
             while c > 2 :
-                warn=QtWidgets.QMessageBox()
-                warn.setText('File contains too much channels. Please choose a mono or stereo file only.')
-                warn.setTitle('Error')
-                fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "",'*.wav')
+                QtWidgets.QMessageBox.critical(self,"Error","File contains too much channels.\nPlease select sweep file only in mono or stereo.")
+                fileName,_ = QtWidgets.QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "",'*.wav')
                 test = read(fileName)[1] 
                 if test.ndim == 1:
                     c=1
@@ -490,6 +542,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.sweep_path=fileName
         
         self.browsesweep_button.setText(Path(fileName).name)
+        self.check_all()
         return
 
     def openResponseFolder(self):
@@ -507,6 +560,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
                 fileName = fileName + '.wav'
         self.save_path=fileName
         self.browseout_button.setText(Path(fileName).name)
+        self.check_all()
         return
     
     def sweep(self):
@@ -558,29 +612,38 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         self.beg_freq.setObjectName("beg_freq")
         self.beg_freq.setText("20")
         self.beg_freq.setPlaceholderText("in Hz")
+        self.beg_freq.textChanged.connect(lambda: self.check_all())
       
         self.end_freq = QtWidgets.QLineEdit(self.params_box)
         self.end_freq.setGeometry(QtCore.QRect(130, 60, 61, 22))
         self.end_freq.setObjectName("end_freq")
         self.end_freq.setText("20000")
         self.end_freq.setPlaceholderText("in Hz")
+        self.end_freq.textChanged.connect(lambda: self.check_all())
       
         self.duration = QtWidgets.QLineEdit(self.params_box)
         self.duration.setGeometry(QtCore.QRect(130, 90, 61, 22))
         self.duration.setObjectName("duration")
         self.duration.setText("12")
         self.duration.setPlaceholderText("in sec")
+        self.duration.textChanged.connect(lambda: self.check_all())
       
         self.label_3 = QtWidgets.QLabel(self.params_box)
         self.label_3.setGeometry(QtCore.QRect(10, 90, 121, 21))
         self.label_3.setObjectName("label_3")
         self.label_3.setText("Duration (sec)")
         
-        self.srate = QtWidgets.QLineEdit(self.params_box)
+        self.srate = QtWidgets.QComboBox(self.params_box)
         self.srate.setGeometry(QtCore.QRect(130, 120, 61, 22))
         self.srate.setObjectName("srate")
-        self.srate.setText("48000")
+        self.srate.addItem('44100')
+        self.srate.addItem('48000')
+        self.srate.addItem('88200')
+        self.srate.addItem('96000')
+        self.srate.addItem('176400')
+        self.srate.addItem('192000')
         self.srate.setPlaceholderText("in Hz")
+        self.srate.currentIndexChanged.connect(lambda: self.check_all())
         
         self.label_4 = QtWidgets.QLabel(self.params_box)
         self.label_4.setGeometry(QtCore.QRect(10, 120, 121, 21))
@@ -602,6 +665,7 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         self.gen_button.setGeometry(QtCore.QRect(300, 50, 270, 51))
         self.gen_button.setObjectName("gen_button")
         self.gen_button.setText("Generate sweep")
+        self.gen_button.setEnabled(False)
         
         self.play_button = QtWidgets.QPushButton(self,clicked=lambda: self.do_nothing())
         self.play_button.setGeometry(QtCore.QRect(300, 120, 270, 51))
@@ -611,9 +675,22 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         
         self.save_loc = ''        
     
+    def check_all(self):
+        if self.beg_freq.text() == '' or self.beg_freq.text() == '0'\
+            or self.end_freq.text() == '' or self.end_freq.text() == '0'\
+            or self.duration.text() == '' or self.duration.text() == '0'\
+            or self.save_button.text() == 'Browse...' or self.save_button.text() == '':
+            self.gen_button.setEnabled(False)
+        
+        elif self.beg_freq.text() != '' and self.beg_freq.text() != '0'\
+            and self.end_freq.text() != '' and self.end_freq.text() != '0'\
+            and self.duration.text() != '' and self.duration.text() != '0'\
+            and self.save_button.text() != 'Browse...' and self.save_button.text() != '':
+            self.gen_button.setEnabled(True)
+
     def sweep(self):
         self.data = self.generate_sweep()
-        wriite(self.save_loc, int(self.srate.text()), self.data)
+        wriite(self.save_loc, int(self.srate.currentText()), self.data)
         self.waveform_disp()
         self.spectro_disp()
         self.play_button.setVisible(True)
@@ -624,18 +701,23 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
     def generate_sweep(self):
         f1 = float(self.beg_freq.text())
         f2 = float(self.end_freq.text())
-        T = int(self.duration.text())
-        sr = int(self.srate.text())
+        T = float(self.duration.text())
+        sr = int(self.srate.currentText())
         R = log(f2/f1)   # sweep rate
         # time = np.array([i/sr for i in range(T*sr)]) # time array for the graph
-        sweep = array([sin(2*pi*f1*T/R*(exp(t/sr*R/T)-1)) for t in range(T*sr)])*32767
+        sweep = array([sin(2*pi*f1*T/R*(exp(t/sr*R/T)-1)) for t in range(int(floor(T*sr)))])*32767
         sweep = sweep.astype(int16)
+        endfade = int(0.1*int(self.srate.currentText()))
+        for i in range(endfade):
+            sweep[i] *= i/endfade
+            sweep[-1*(i+1)] *= i/endfade
+
         return sweep
     
     def waveform_disp(self):
         self.sweep_plot.clear()
         normdata = self.data/maax(abs(self.data))
-        t = [x/int(self.srate.text()) for x in range(len(normdata))]
+        t = [x/int(self.srate.currentText()) for x in range(len(normdata))]
         pen = pg.mkPen(color = 'b')
         self.sweep_plot.plot(t[0:len(normdata)],normdata,pen=pen)
         # y ticks
@@ -647,7 +729,7 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         
     def spectro_disp(self):
         IR = asarray(self.data)
-        f,t,Sxx = spectrogram(IR,fs=int(self.srate.text()),nfft=len(IR)//50,nperseg=len(IR)//400,scaling='spectrum')
+        f,t,Sxx = spectrogram(IR,fs=int(self.srate.currentText()),nfft=len(IR)//50,nperseg=len(IR)//400,scaling='spectrum')
         Sxx = 20*log10(transpose(Sxx))
         img = pg.ImageItem()
         img.setImage(Sxx)
@@ -685,6 +767,7 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
                 fileName = fileName + '.wav'
         self.save_loc=fileName
         self.save_button.setText(Path(fileName).name)
+        self.check_all()
         return
 
 class abtDial(QtWidgets.QMainWindow):
