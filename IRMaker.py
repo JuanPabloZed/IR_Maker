@@ -15,7 +15,7 @@ from funcs import next_power_of_2, smooth, normalize
 
 import sys
 from os import mkdir,path
-
+            
 class Ui_MainWIndow(QtWidgets.QMainWindow):
     def __init__(self,parent=None):
         super(Ui_MainWIndow,self).__init__(parent)
@@ -231,6 +231,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.sweep_path = ''
         self.save_name = '' # for autosave
         self.save_path = '' # for custom save
+
 
     def check_all(self):
         if self.customsave_radio.isChecked() == False:
