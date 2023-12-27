@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="abt_img">
+    <file>irmaker.png</file>
+  </qresource>
+</RCC>
