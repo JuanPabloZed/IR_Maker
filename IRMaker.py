@@ -14,13 +14,23 @@ from qt_material import apply_stylesheet
 from funcs import next_power_of_2, smooth, normalize
 
 import sys
-from os import mkdir,path        
+from os import mkdir,path
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = path.abspath(".")
+
+    return path.join(base_path, relative_path)
 
 class Ui_MainWIndow(QtWidgets.QMainWindow):
     def __init__(self,parent=None):
         super(Ui_MainWIndow,self).__init__(parent)
         self.setWindowTitle('IR Maker')
-        self.setWindowIcon(QtGui.QIcon("irmaker.png"))
+        self.setWindowIcon(QtGui.QIcon(resource_path("add\irmaker.png")))
         self.setFixedSize(1050,900)
                 
         self.about_button = QtWidgets.QPushButton(self)
@@ -116,11 +126,11 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.output_box.setObjectName("output_box")
         self.output_box.setTitle("Output")
 
-        self.mpt_checkbox = QtWidgets.QCheckBox(self.output_box)
-        self.mpt_checkbox.setGeometry(QtCore.QRect(10, 190, 151, 20))
-        self.mpt_checkbox.setObjectName("mpt_checkbox")
-        self.mpt_checkbox.setText("MP transform")
-        self.mpt_checkbox.stateChanged.connect(lambda: self.err_mess())
+        # self.mpt_checkbox = QtWidgets.QCheckBox(self.output_box)
+        # self.mpt_checkbox.setGeometry(QtCore.QRect(10, 190, 151, 20))
+        # self.mpt_checkbox.setObjectName("mpt_checkbox")
+        # self.mpt_checkbox.setText("MP transform")
+        # self.mpt_checkbox.stateChanged.connect(lambda: self.err_mess())
 
         self.bitdepth_combo = QtWidgets.QComboBox(self.output_box)
         self.bitdepth_combo.setGeometry(QtCore.QRect(138 , 165, 73, 22))
@@ -180,6 +190,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.srate.setObjectName("srate")
         self.srate.setStyleSheet("color: #8bc34a")
         self.srate.setPlaceholderText("in Hz")
+        self.srate_ss = self.srate.styleSheet()
         self.srate.textChanged.connect(lambda: self.check_all())
 
         self.boxes_layout.addWidget(self.output_box)
@@ -579,7 +590,7 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(Ui_SweepGenerator,self).__init__(parent)
         self.setWindowTitle('Sweep generator')
-        self.setWindowIcon(QtGui.QIcon('irmaker.ico'))
+        self.setWindowIcon(QtGui.QIcon(resource_path("add\irmaker.png")))
         self.setFixedSize(620,630)
        
         self.spectro_plot = pg.PlotWidget(self)
@@ -718,7 +729,7 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         # time = np.array([i/sr for i in range(T*sr)]) # time array for the graph
         sweep = array([sin(2*pi*f1*T/R*(exp(t/sr*R/T)-1)) for t in range(int(floor(T*sr)))])*32767
         sweep = sweep.astype(int16)
-        endfade = int(0.1*int(self.srate.currentText()))
+        endfade = int(0.01*int(sr)*T)
         for i in range(endfade):
             sweep[i] *= i/endfade
             sweep[-1*(i+1)] *= i/endfade
@@ -785,7 +796,7 @@ class abtDial(QtWidgets.QMainWindow):
     def __init__(self,parent=None):
         super(abtDial,self).__init__(parent)
         self.setWindowTitle('About')
-        self.setWindowIcon(QtGui.QIcon('irmaker.ico'))
+        self.setWindowIcon(QtGui.QIcon(resource_path('add\irmaker.png')))
         self.setFixedSize(400,300)
         self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(QtCore.QRect(10, 260, 380, 16))
@@ -796,7 +807,7 @@ class abtDial(QtWidgets.QMainWindow):
         self.label_2 = QtWidgets.QLabel(self)
         self.label_2.setGeometry(QtCore.QRect(140, 10, 120, 120))
         self.label_2.setText("")
-        self.label_2.setPixmap(QtGui.QPixmap("irmaker.png"))
+        self.label_2.setPixmap(QtGui.QPixmap(resource_path("add\irmaker.png")))
         self.label_2.setScaledContents(True)
         self.label_2.setObjectName("label_2")
 

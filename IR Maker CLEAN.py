@@ -652,11 +652,6 @@ class abtDial(QDialog):
         self.label_5 = self.findChild(QLabel,"label_5")
         self.label_6 = self.findChild(QLabel,"label_6")
 
-
-
-
-
-
 def main():
     app = QApplication(sys.argv)
     main_window = Ui_MainWIndow()
