@@ -126,7 +126,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         self.output_box.setObjectName("output_box")
         self.output_box.setTitle("Output")
 
-        # self.mpt_checkbox = QtWidgets.QCheckBox(self.output_box)
+        self.mpt_checkbox = QtWidgets.QCheckBox(self.output_box)
         # self.mpt_checkbox.setGeometry(QtCore.QRect(10, 190, 151, 20))
         # self.mpt_checkbox.setObjectName("mpt_checkbox")
         # self.mpt_checkbox.setText("MP transform")
@@ -269,7 +269,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
                 or self.noselec == 1\
                 or self.browseout_button.text() == "Browse output" or self.browseout_button.text() == ''\
                 or self.srate.text() == '' or self.srate.text() == '0':
-
+            
                 self.createir_button.setEnabled(False)
             # if ALL things done, enable create button
             elif self.browsesweep_button.text() != "Browse sweep file" and self.browsesweep_button.text() != '' \
@@ -286,7 +286,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         # compute the IR
         ### ERRORS MANAGEMENT ###
 
-           
+
         ir = self.deconvolver()
         # custom path or auto path for saving IR file
         self.outpath = ''
