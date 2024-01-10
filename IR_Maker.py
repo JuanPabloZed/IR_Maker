@@ -23,7 +23,7 @@ from pyqtgraph import PlotWidget, mkPen, mkBrush, ImageItem, HistogramLUTItem
 from pathlib import Path
 from qt_material import apply_stylesheet
 
-from funcs import next_power_of_2, smooth, normalize
+from funcs import npow2, smooth, normalize
 
 import sys
 from os import mkdir,path        
@@ -85,6 +85,8 @@ class Ui_MainWIndow(QMainWindow):
 
         self.mpt_checkbox = self.findChild(QCheckBox,"mpt_checkbox")
         self.mpt_checkbox.stateChanged.connect(lambda: self.err_mess())
+        self.mpt_checkbox.setText("MP Transform (coming soon)")
+        self.mpt_checkbox.setEnabled(False)
 
         self.bitdepth_combo = self.findChild(QComboBox,"bitdepth_combo")
         self.bitdepth_combo.setStyleSheet("color: #8bc34a")
@@ -382,7 +384,7 @@ class Ui_MainWIndow(QMainWindow):
             self.spectral_plot.setVisible(True)
             # get signal & compute FFT
             npoutfile = asarray(data)/maax(data)
-            pad_length = next_power_of_2(next_power_of_2(len(npoutfile)))
+            pad_length = npow2(npow2(len(npoutfile)))
             padded_npoutfile = pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
             h_panned_npoutfile = padded_npoutfile*blackman(pad_length)
             # fft_outfile = np.fft.rfft(h_panned_npoutfile)
