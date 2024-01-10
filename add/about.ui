@@ -35,9 +35,9 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>139</x>
      <y>10</y>
-     <width>120</width>
+     <width>121</width>
      <height>120</height>
     </rect>
    </property>
@@ -45,7 +45,7 @@
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap resource="abt_img.qrc">:/abt_img/irmaker.png</pixmap>
+    <pixmap>irmaker.png</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>
@@ -131,8 +131,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="abt_img.qrc"/>
-  <include location="abt_img.qrc"/>
+  <include location="about_img.qrc"/>
  </resources>
  <connections/>
 </ui>

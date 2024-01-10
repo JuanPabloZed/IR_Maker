@@ -28,17 +28,26 @@ from funcs import next_power_of_2, smooth, normalize
 import sys
 from os import mkdir,path        
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = path.abspath(".")
+
+    return path.join(base_path, relative_path)
+
 class Ui_MainWIndow(QMainWindow):
     def __init__(self,parent=None):
         super(Ui_MainWIndow,self).__init__(parent)
         
         # load ui
-        loadUi("main_window.ui",self)
+        loadUi(resource_path("add\main_window.ui"),self)
 
         # show elements
         self.about_button = self.findChild(QPushButton,"about_button")
         self.about_button.clicked.connect(lambda: self.aboutDial())
-
         
         self.sweep_box  = self.findChild(QGroupBox,"sweep_box")
 
@@ -484,7 +493,7 @@ class Ui_SweepGenerator(QDialog):
         super(Ui_SweepGenerator,self).__init__(parent)
 
         # load ui
-        loadUi("sweep_window.ui",self)
+        loadUi(resource_path("add\sweep_window.ui"),self)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint,False)
         # show elements
         self.spectro_plot = self.findChild(PlotWidget,"spectro_plot")
@@ -640,13 +649,13 @@ class abtDial(QDialog):
     def __init__(self,parent=None):
         super(abtDial,self).__init__(parent)
         #load ui file
-        loadUi("about.ui",self)
+        loadUi(resource_path(R"add\about.ui"),self)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint,False)
 
         #show elements
         self.label = self.findChild(QLabel,"label")
         self.label_2 = self.findChild(QLabel,"label_2")
-        self.label_2.setPixmap(QPixmap("irmaker.png"))
+        self.label_2.setPixmap(QPixmap(resource_path("add\irmaker.png")))
         self.label_3 = self.findChild(QLabel,"label_3")
         self.label_4 = self.findChild(QLabel,"label_4")
         self.label_5 = self.findChild(QLabel,"label_5")
