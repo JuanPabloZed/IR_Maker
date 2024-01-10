@@ -9,7 +9,7 @@ def normalize(data):
         normdata = data/max([maxL,maxR])
     return normdata
 
-def next_power_of_2(n):
+def npow2(n):
     return 1 << (int(log2(n - 1)) + 1)
 
 def smooth(y, box_pts):

@@ -1,225 +1,139 @@
-from numpy import array,log,exp,sin,pi,int16,flip,column_stack,int32,float32,argmax,max as maax,asarray,pad,blackman,log10,min as miin,transpose,size as siize,shape,floor
 from numpy.fft import rfft,rfftfreq
+from numpy import (array, log, exp, sin, pi, int16, flip, column_stack,
+                   int32, float32, argmax, max as maax, asarray,pad,
+                   blackman, log10, min as miin, transpose, 
+                   size as siize, shape, floor)
 
 from scipy.io.wavfile import read,write as wriite
 from scipy.signal import convolve, spectrogram
 from soundfile import write
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.uic import loadUi
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QDir
+from PyQt5.QtCore import Qt
 from PyQt5.QtMultimedia import QSound
-import pyqtgraph as pg
+from PyQt5.QtWidgets import (QMainWindow, QDialog ,QPushButton, QApplication, 
+                             QMessageBox, QLineEdit, QLabel, QComboBox, 
+                             QCheckBox, QFileSystemModel, QFileDialog, 
+                             QRadioButton, QGroupBox, QListView)
+
+from pyqtgraph.Qt.QtGui import QTransform
+from pyqtgraph import PlotWidget, mkPen, mkBrush, ImageItem, HistogramLUTItem
 from pathlib import Path
 from qt_material import apply_stylesheet
 
-from funcs import next_power_of_2, smooth, normalize
+from funcs import npow2, smooth, normalize
 
 import sys
-from os import mkdir,path
+from os import mkdir,path        
 
-class Ui_MainWIndow(QtWidgets.QMainWindow):
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = path.abspath(".")
+
+    return path.join(base_path, relative_path)
+
+class Ui_MainWIndow(QMainWindow):
     def __init__(self,parent=None):
         super(Ui_MainWIndow,self).__init__(parent)
-        self.setWindowTitle('IR Maker')
-        self.setWindowIcon(QtGui.QIcon("irmaker.png"))
-        self.setFixedSize(1050,900)
-                
-        self.about_button = QtWidgets.QPushButton(self)
-        self.about_button.setGeometry(QtCore.QRect(960, 5, 80, 22))
-        self.about_button.setObjectName("about_label")
-        self.about_button.setFlat(True)
-        self.about_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        font = QtGui.QFont()
-        font.setUnderline(True)
-        self.about_button.setFont(font)
-        self.about_button.setText("About")
+        
+        # load ui
+        loadUi(resource_path("add\main_window.ui"),self)
+
+        # show elements
+        self.about_button = self.findChild(QPushButton,"about_button")
         self.about_button.clicked.connect(lambda: self.aboutDial())
-
-        self.layoutWidget = QtWidgets.QWidget(self)
-        self.layoutWidget.setGeometry(QtCore.QRect(10, 10, 821, 221))
-        self.layoutWidget.setObjectName("layoutWidget")
-
-        self.boxes_layout = QtWidgets.QHBoxLayout(self.layoutWidget)
-        self.boxes_layout.setContentsMargins(0, 0, 0, 0)
-        self.boxes_layout.setObjectName("boxes_layout")
-        self.sweep_box = QtWidgets.QGroupBox(self.layoutWidget)
-        self.sweep_box.setObjectName("sweep_box")
-        self.sweep_box.setTitle("Sweep")
         
-        self.browsesweep_button = QtWidgets.QPushButton(self.sweep_box,clicked = lambda: self.openFileSweep())
-        self.browsesweep_button.setGeometry(QtCore.QRect(9, 40, 250, 28))
-        self.browsesweep_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.browsesweep_button.setObjectName("browsesweep_button")
-        self.browsesweep_button.setText("Browse sweep file")
-        
-        self.beg_freq = QtWidgets.QLineEdit(self.sweep_box)
-        self.beg_freq.setGeometry(QtCore.QRect(153, 85, 89, 22))
-        self.beg_freq.setText("20")
-        self.beg_freq.setObjectName("beg_freq")
-        self.beg_freq.setPlaceholderText("in Hz")
+        self.sweep_box  = self.findChild(QGroupBox,"sweep_box")
+
+        self.browsesweep_button = self.findChild(QPushButton,"browsesweep_button")
+        self.browsesweep_button.clicked.connect(lambda: self.openFileSweep())
+
+        self.beg_freq = self.findChild(QLineEdit,"beg_freq")
         self.beg_freq.setStyleSheet("color: #8bc34a")
         self.beg_freq.textChanged.connect(lambda: self.check_all())
 
-        self.end_freq = QtWidgets.QLineEdit(self.sweep_box)
-        self.end_freq.setGeometry(QtCore.QRect(153, 110, 89, 22))
-        self.end_freq.setText("20000")
+        self.end_freq = self.findChild(QLineEdit,"end_freq")
         self.end_freq.setStyleSheet("color: #8bc34a")
-        self.end_freq.setObjectName("end_freq")
-        self.end_freq.setPlaceholderText("in Hz")
         self.end_freq.textChanged.connect(lambda: self.check_all())
-        
-        self.begfreq_label = QtWidgets.QLabel(self.sweep_box)
-        self.begfreq_label.setGeometry(QtCore.QRect(15, 87, 131, 21))
-        self.begfreq_label.setAlignment(QtCore.Qt.AlignRight)
-        self.begfreq_label.setObjectName("begfreq_label")
-        self.begfreq_label.setText("Beginning freq. (Hz)")
-        
-        self.endfreq_label = QtWidgets.QLabel(self.sweep_box)
-        self.endfreq_label.setGeometry(QtCore.QRect(34, 112, 101, 21))
-        self.endfreq_label.setAlignment(QtCore.Qt.AlignLeft)
-        self.endfreq_label.setObjectName("endfreq_label")
-        self.endfreq_label.setText("Ending freq. (Hz)")
-        
-        self.sweepgen_button = QtWidgets.QPushButton(self.sweep_box,clicked=lambda: self.sweep())
-        self.sweepgen_button.setGeometry(QtCore.QRect(19, 150, 229, 61))
-        self.sweepgen_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.sweepgen_button.setObjectName("sweepgen_button")
-        self.sweepgen_button.setText("Sweep generator")
-        
-        self.boxes_layout.addWidget(self.sweep_box)
 
-        self.response_box = QtWidgets.QGroupBox(self.layoutWidget)
-        self.response_box.setObjectName("response_box")
-        self.response_box.setTitle("Response")
-        
-        self.loadfolder_button = QtWidgets.QPushButton(self.response_box,clicked=lambda: self.openResponseFolder())
-        self.loadfolder_button.setGeometry(QtCore.QRect(9, 40, 251, 28))
-        self.loadfolder_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.loadfolder_button.setObjectName("loadfolder_button")
-        self.loadfolder_button.setText("Select recording(s) folder")
-        
-        self.files_list = QtWidgets.QListView(self.response_box)
-        self.files_list.setGeometry(QtCore.QRect(10, 75, 251, 136))
-        self.files_list.setStatusTip("")
-        self.files_list.setWhatsThis("")
-        self.files_list.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        self.files_list.setViewMode(QtWidgets.QListView.ListMode)
-        self.files_list.setSelectionRectVisible(True)
-        self.files_list.setObjectName("files_list")
-        self.fileModel = QtWidgets.QFileSystemModel()
+        self.begfreq_label = self.findChild(QLabel,"begfreq_label")
+
+        self.endfreq_label = self.findChild(QLabel,"endfreq_label")
+        self.end_freq.setStyleSheet("color: #8bc34a")
+
+        self.sweepgen_button = self.findChild(QPushButton,"sweepgen_button")
+        self.sweepgen_button.clicked.connect(lambda: self.sweep())
+
+        self.response_box = self.findChild(QGroupBox,"response_box")
+
+        self.loadfolder_button = self.findChild(QPushButton,"loadfolder_button")
+        self.loadfolder_button.clicked.connect(lambda: self.openResponseFolder())
+
+        self.files_list = self.findChild(QListView,"files_list")
+        self.fileModel = QFileSystemModel()
         self.files_list.setModel(self.fileModel)
         self.files_list.selectionModel().selectionChanged.connect(lambda: self.selectInList())
         self.noselec = 1
 
-        self.boxes_layout.addWidget(self.response_box)
+        self.output_box = self.findChild(QGroupBox,"output_box")
 
-        self.output_box = QtWidgets.QGroupBox(self.layoutWidget)
-        self.output_box.setObjectName("output_box")
-        self.output_box.setTitle("Output")
-
-        self.mpt_checkbox = QtWidgets.QCheckBox(self.output_box)
-        self.mpt_checkbox.setGeometry(QtCore.QRect(10, 190, 151, 20))
-        self.mpt_checkbox.setObjectName("mpt_checkbox")
-        self.mpt_checkbox.setText("MP transform")
+        self.mpt_checkbox = self.findChild(QCheckBox,"mpt_checkbox")
         self.mpt_checkbox.stateChanged.connect(lambda: self.err_mess())
+        self.mpt_checkbox.setText("MP Transform (coming soon)")
+        self.mpt_checkbox.setEnabled(False)
 
-        self.bitdepth_combo = QtWidgets.QComboBox(self.output_box)
-        self.bitdepth_combo.setGeometry(QtCore.QRect(138 , 165, 73, 22))
-        self.bitdepth_combo.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.bitdepth_combo.setObjectName("bitdepth_combo")
+        self.bitdepth_combo = self.findChild(QComboBox,"bitdepth_combo")
         self.bitdepth_combo.setStyleSheet("color: #8bc34a")
-        self.bitdepth_combo.addItem("")
-        self.bitdepth_combo.addItem("")
-        self.bitdepth_combo.addItem("")
-        self.bitdepth_combo.setItemText(0, "16 bit")
-        self.bitdepth_combo.setItemText(1, "24 bit")
-        self.bitdepth_combo.setItemText(2, "32 bit") 
-        self.bitdepth_combo.setCurrentIndex(1)     
 
-        self.bitdepth_label = QtWidgets.QLabel(self.output_box)
-        self.bitdepth_label.setGeometry(QtCore.QRect(70, 166, 51, 21))
-        self.bitdepth_label.setObjectName("bitdepth_label")
-        self.bitdepth_label.setText("Bit depth")
-        
-        self.autosave_radio = QtWidgets.QRadioButton(self.output_box, clicked=lambda: self.browseout_button.setEnabled(False))
-        self.autosave_radio.setGeometry(QtCore.QRect(10, 25, 201, 51))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.autosave_radio.sizePolicy().hasHeightForWidth())
-        self.autosave_radio.setSizePolicy(sizePolicy)
-        font = QtGui.QFont()
-        font.setItalic(False)
-        self.autosave_radio.setFont(font)
-        self.autosave_radio.setText("Automatic output (creates \"IR\"\n"
-                                    "folder in recordings folder)")
-        self.autosave_radio.setIconSize(QtCore.QSize(20, 20))
+        self.bitdepth_label = self.findChild(QLabel,"bitdepth_label")
+
+        self.autosave_radio = self.findChild(QRadioButton,"autosave_radio")
         self.autosave_radio.setChecked(True)
-        self.autosave_radio.setObjectName("autosave_radio")
+        self.autosave_radio.clicked.connect(lambda: self.browseout_button.setEnabled(False))
         self.autosave_radio.toggled.connect(lambda: self.check_all())
 
-        self.customsave_radio = QtWidgets.QRadioButton(self.output_box,clicked=lambda: self.browseout_button.setEnabled(True))
-        self.customsave_radio.setGeometry(QtCore.QRect(10, 70, 161, 20))
-        self.customsave_radio.setObjectName("customsave_radio")
-        self.customsave_radio.setText("Custom output")
-        
-        self.browseout_button = QtWidgets.QPushButton(self.output_box,clicked=lambda: self.customSaveOut())
-        self.browseout_button.setGeometry(QtCore.QRect(61, 97, 151, 28))
-        self.browseout_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.browseout_button.setAutoFillBackground(False)
-        self.browseout_button.setObjectName("browseout_button")
-        self.browseout_button.setText("Browse output")
+        self.customsave_radio = self.findChild(QRadioButton,"customsave_radio")
+        self.customsave_radio.clicked.connect(lambda: self.browseout_button.setEnabled(True))
+
+        self.browseout_button = self.findChild(QPushButton,"browseout_button")
+        self.browseout_button.clicked.connect(lambda: self.customSaveOut())
         self.browseout_button.setEnabled(False)
-        
-        self.srate_label = QtWidgets.QLabel(self.output_box)
-        self.srate_label.setGeometry(QtCore.QRect(28, 135, 111, 21))
-        self.srate_label.setObjectName("srate_label")
-        self.srate_label.setText("Sample rate (Hz)")
-        
-        self.srate = QtWidgets.QLineEdit(self.output_box)
-        self.srate.setGeometry(QtCore.QRect(138, 135, 106, 22))
-        self.srate.setObjectName("srate")
+
+        self.srate_label = self.findChild(QLabel,"srate_label")
+
+        self.srate = self.findChild(QLineEdit,"srate")
         self.srate.setStyleSheet("color: #8bc34a")
-        self.srate.setPlaceholderText("in Hz")
-        self.srate_ss = self.srate.styleSheet()
         self.srate.textChanged.connect(lambda: self.check_all())
 
-        self.boxes_layout.addWidget(self.output_box)
-
-        self.createir_button = QtWidgets.QPushButton(self,clicked=lambda: self.programme())
-        self.createir_button.setObjectName("createir_button")
-        self.createir_button.setGeometry(840,30,201,81)
-        self.createir_button.setText("Create IR")
+        self.createir_button = self.findChild(QPushButton,"createir_button")
         self.createir_button.setEnabled(False)
-        
-        self.playir_button = QtWidgets.QPushButton(self,clicked = lambda: self.do_nothing())
-        self.playir_button.setGeometry(840, 128, 201, 81)
-        self.playir_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.playir_button.setObjectName("playir_button")
-        self.playir_button.setText("Play IR")
+        self.createir_button.clicked.connect(lambda: self.programme())
+
+        self.playir_button = self.findChild(QPushButton,"playir_button")
+        self.playir_button.clicked.connect(lambda: self.do_nothing())
         self.playir_button.setEnabled(False)
-        
-        self.spectrogram_plot = pg.PlotWidget(self)
-        self.spectrogram_plot.setEnabled(True)
-        self.spectrogram_plot.setGeometry(QtCore.QRect(10, 560, 1030, 330))
-        self.spectrogram_plot.setObjectName("spectrogram_plot")
-        self.spectrogram_plot.setBackground('k')
+
+        self.spectrogram_plot = self.findChild(PlotWidget,"spectrogram_plot")
         self.spectrogram_plot.setVisible(False)
+        self.spectrogram_plot.setBackground('k')
         self.spectrogram_plot.setTitle('Spectrogram')
         self.spectrogram_plot.setLabel('bottom','Time',units='s')
         self.spectrogram_plot.setLabel('left','Frequency',units='Hz')
-      
-        self.ir_plot = pg.PlotWidget(self)
-        self.ir_plot.setGeometry(QtCore.QRect(10, 240, 1030, 315))
-        self.ir_plot.setObjectName("ir_plot")
+
+        self.ir_plot = self.findChild(PlotWidget,"ir_plot")
         self.ir_plot.setBackground('k')
         self.ir_plot.setTitle('Waveform')
         self.ir_plot.showGrid(x=True,y=True)
         self.ir_plot.setLabel('bottom', 'Time',units='s')
         self.ir_plot.setLabel('left', 'Amplitude')
-     
-        self.spectral_plot = pg.PlotWidget(self)
-        self.spectral_plot.setGeometry(QtCore.QRect(10, 560, 1030, 330))
-        self.spectral_plot.setObjectName("spectral_plot")
+
+        self.spectral_plot = self.findChild(PlotWidget,"spectral_plot")
         self.spectral_plot.setBackground('k')
         self.spectral_plot.setTitle('Spectrum')
         self.spectral_plot.setLogMode(x=True)
@@ -325,7 +239,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         print(shape(outfile))
         if outfile.ndim == 2:
             if shape(outfile)[1] > 2:
-                QtWidgets.QMessageBox.critical(self,"Error","Multichannel files not supported.\nPlease select a response file in mono or stereo only.")
+                QMessageBox.critical(self,"Error","Multichannel files not supported.\nPlease select a response file in mono or stereo only.")
                 return
         # sweep read
         ress, ess1 = read(self.sweep_path)
@@ -427,7 +341,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
             self.ir_plot.clear()
             normdata_mono = data/maax(abs(data))
             t = [x/int(self.srate.text()) for x in range(len(normdata_mono))]
-            pen = pg.mkPen(color = '#8bc34a')
+            pen = mkPen(color = '#8bc34a')
             self.ir_plot.plot(t[0:len(normdata_mono)],normdata_mono,pen=pen)
             # y ticks
             aymono = self.ir_plot.getAxis('left')
@@ -447,10 +361,10 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
             # plot
             self.ir_plot.clear()
             # left
-            pen = pg.mkPen(color = '#bf0000')
+            pen = mkPen(color = '#bf0000')
             self.ir_plot.plot(t[0:len(dataL)],normdataL + 2.2,pen=pen)
             # right
-            pen = pg.mkPen(color = '#8bc34a')
+            pen = mkPen(color = '#8bc34a')
             self.ir_plot.plot(t[0:len(dataR)],normdataR,pen=pen)
             
             # y axis ticks
@@ -470,7 +384,7 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
             self.spectral_plot.setVisible(True)
             # get signal & compute FFT
             npoutfile = asarray(data)/maax(data)
-            pad_length = next_power_of_2(next_power_of_2(len(npoutfile)))
+            pad_length = npow2(npow2(len(npoutfile)))
             padded_npoutfile = pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
             h_panned_npoutfile = padded_npoutfile*blackman(pad_length)
             # fft_outfile = np.fft.rfft(h_panned_npoutfile)
@@ -486,8 +400,8 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
             f = f[i:j]
             fft_toplot = fft_toplot[i:j]
 
-            pen = pg.mkPen(color = '#5e8332')
-            brush = pg.mkBrush(color='#8bc34a')
+            pen = mkPen(color = '#5e8332')
+            brush = mkBrush(color='#8bc34a')
 
             self.spectral_plot.clear()
             self.spectral_plot.plot(f,fft_toplot,fillLevel=1.15*miin(fft_toplot),brush=brush,pen=pen)
@@ -502,13 +416,13 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
             IR = (asarray(data[:,0]) + asarray(data[:,1]))/2
             f,t,Sxx = spectrogram(IR,fs=int(self.srate.text()),nfft=len(IR)//50,nperseg=len(IR)//400,scaling='spectrum')
             Sxx = 20*log10(transpose(Sxx))
-            img = pg.ImageItem()
+            img = ImageItem()
             img.setImage(Sxx)
-            tr = pg.Qt.QtGui.QTransform()
+            tr = QTransform()
             tr.scale(t[-1] / siize(Sxx, axis=0), f[-1] / siize(Sxx, axis=1))  
             img.setTransform(tr)
             self.spectrogram_plot.setLimits(xMin=0, xMax=t[-1], yMin=f[0], yMax=f[-1])
-            hist = pg.HistogramLUTItem()
+            hist = HistogramLUTItem()
             hist.setImageItem(img)
             hist.setLevels(miin(Sxx), maax(Sxx))
             hist.gradient.restoreState(
@@ -535,13 +449,13 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         return
 
     def openFileSweep(self):
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self,"Select sweep file", "","*wav")
+        fileName, _ = QFileDialog.getOpenFileName(self,"Select sweep file", "","*wav")
         test = read(fileName)[1] 
         if test.ndim == 2 :
             _,c = shape(test)
             while c > 2 :
-                QtWidgets.QMessageBox.critical(self,"Error","File contains too much channels.\nPlease select sweep file only in mono or stereo.")
-                fileName,_ = QtWidgets.QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "",'*.wav')
+                QMessageBox.critical(self,"Error","File contains too much channels.\nPlease select sweep file only in mono or stereo.")
+                fileName,_ = QFileDialog.getOpenFileName(self,"Please choose a mono or stereo file only", "",'*.wav')
                 test = read(fileName)[1] 
                 if test.ndim == 1:
                     c=1
@@ -554,16 +468,16 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         return
 
     def openResponseFolder(self):
-        self.folderpath = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select recordings folder')
+        self.folderpath = QFileDialog.getExistingDirectory(self, 'Select recordings folder')
         self.files_list.setRootIndex(self.fileModel.setRootPath(self.folderpath))
-        self.fileModel.setFilter(QtCore.QDir.NoDotAndDotDot |  QtCore.QDir.Files)
+        self.fileModel.setFilter(QDir.NoDotAndDotDot |  QDir.Files)
         self.fileModel.setNameFilters(['*.wav'])
         self.fileModel.setNameFilterDisables(False)
         self.loadfolder_button.setText(Path(self.folderpath).name)
         return
     
     def customSaveOut(self):
-        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self,"Select saving location","","*.wav")
+        fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav")
         if fileName[-4:] != '.wav':
                 fileName = fileName + '.wav'
         self.save_path=fileName
@@ -576,117 +490,68 @@ class Ui_MainWIndow(QtWidgets.QMainWindow):
         dialog.show()
         return
  
-class Ui_SweepGenerator(QtWidgets.QMainWindow):
+class Ui_SweepGenerator(QDialog):
     def __init__(self, parent=None):
         super(Ui_SweepGenerator,self).__init__(parent)
-        self.setWindowTitle('Sweep generator')
-        self.setWindowIcon(QtGui.QIcon('irmaker.ico'))
-        self.setFixedSize(620,630)
-       
-        self.spectro_plot = pg.PlotWidget(self)
-        self.spectro_plot.setEnabled(True)
-        self.spectro_plot.setGeometry(QtCore.QRect(10, 400, 600, 220))
-        self.spectro_plot.setObjectName("spectro_plot")
+
+        # load ui
+        loadUi(resource_path("add\sweep_window.ui"),self)
+        self.setWindowFlag(Qt.WindowContextHelpButtonHint,False)
+        # show elements
+        self.spectro_plot = self.findChild(PlotWidget,"spectro_plot")
         self.spectro_plot.setBackground('k')
         self.spectro_plot.setTitle('Spectrogram')
         self.spectro_plot.setLabel('left','Frequency',units='Hz')
         self.spectro_plot.setLabel('bottom','Time',units='s')
-      
-        self.sweep_plot = pg.PlotWidget(self)
-        self.sweep_plot.setGeometry(QtCore.QRect(10, 240, 600, 150))
-        self.sweep_plot.setObjectName("sweep_plot")
+
+        self.sweep_plot = self.findChild(PlotWidget,"sweep_plot")
         self.sweep_plot.setBackground('k')
         self.sweep_plot.setTitle('Waveform')
         self.sweep_plot.setLabel('left','Amplitude')
         self.sweep_plot.setLabel('bottom','Time',units="s")
-      
-        self.params_box = QtWidgets.QGroupBox(self)
-        self.params_box.setGeometry(QtCore.QRect(40, 10, 221, 211))
-        self.params_box.setObjectName("params_box")
-        self.params_box.setTitle("Sweep parameters")
-      
-        self.label = QtWidgets.QLabel(self.params_box)
-        self.label.setGeometry(QtCore.QRect(10, 35, 121, 21))
-        self.label.setObjectName("label")
-        self.label.setText("Beginning freq. (Hz)")
-      
-        self.label_2 = QtWidgets.QLabel(self.params_box)
-        self.label_2.setGeometry(QtCore.QRect(10, 65, 121, 21))
-        self.label_2.setObjectName("label_2")
-        self.label_2.setText("Ending freq. (Hz)")
-      
-        self.beg_freq = QtWidgets.QLineEdit(self.params_box)
-        self.beg_freq.setGeometry(QtCore.QRect(130, 35, 81, 22))
-        self.beg_freq.setObjectName("beg_freq")
-        self.beg_freq.setText("20")
-        self.beg_freq.setStyleSheet('color : #8bc34a')
-        self.beg_freq.setPlaceholderText("in Hz")
-        self.beg_freq.textChanged.connect(lambda: self.check_all())
-      
-        self.end_freq = QtWidgets.QLineEdit(self.params_box)
-        self.end_freq.setGeometry(QtCore.QRect(130, 65, 81, 22))
-        self.end_freq.setObjectName("end_freq")
-        self.end_freq.setText("20000")
-        self.end_freq.setStyleSheet('color : #8bc34a')
-        self.end_freq.setPlaceholderText("in Hz")
-        self.end_freq.textChanged.connect(lambda: self.check_all())
-      
-        self.duration = QtWidgets.QLineEdit(self.params_box)
-        self.duration.setGeometry(QtCore.QRect(130, 95, 81, 22))
-        self.duration.setObjectName("duration")
-        self.duration.setText("12")
-        self.duration.setStyleSheet('color : #8bc34a')
-        self.duration.setPlaceholderText("in sec")
-        self.duration.textChanged.connect(lambda: self.check_all())
-      
-        self.label_3 = QtWidgets.QLabel(self.params_box)
-        self.label_3.setGeometry(QtCore.QRect(10, 95, 121, 21))
-        self.label_3.setObjectName("label_3")
-        self.label_3.setText("Duration (sec)")
-        
-        self.srate = QtWidgets.QComboBox(self.params_box)
-        self.srate.setGeometry(QtCore.QRect(130, 125, 81, 22))
-        self.srate.setObjectName("srate")
-        self.srate.addItem('44100')
-        self.srate.addItem('48000')
-        self.srate.addItem('88200')
-        self.srate.addItem('96000')
-        self.srate.addItem('176400')
-        self.srate.addItem('192000')
-        self.srate.setStyleSheet('color : #8bc34a')
-        self.srate.setPlaceholderText("in Hz")
-        self.srate.currentIndexChanged.connect(lambda: self.check_all())
-        
-        self.label_4 = QtWidgets.QLabel(self.params_box)
-        self.label_4.setGeometry(QtCore.QRect(10, 125, 121, 21))
-        self.label_4.setObjectName("label_4")
-        self.label_4.setText("Sample rate (Hz)")
-        
-        self.save_button = QtWidgets.QPushButton(self.params_box,clicked=lambda: self.saveFile())
-        self.save_button.setGeometry(QtCore.QRect(20, 170, 181, 28))
-        self.save_button.setObjectName("save_button")
-        self.save_button.setText("Browse...")
-        
-        self.label_5 = QtWidgets.QLabel(self.params_box)
-        self.label_5.setGeometry(QtCore.QRect(0, 145, 221, 28))
-        self.label_5.setObjectName("label_5")
-        self.label_5.setText("Saving location")
-        self.label_5.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.gen_button = QtWidgets.QPushButton(self,clicked=lambda: self.sweep())
-        self.gen_button.setGeometry(QtCore.QRect(300, 50, 270, 51))
-        self.gen_button.setObjectName("gen_button")
-        self.gen_button.setText("Generate sweep")
+        self.params_box = self.findChild(QGroupBox, "params_box")
+
+        self.label = self.findChild(QLabel,"label") 
+
+        self.label_2 = self.findChild(QLabel,'label_2')
+
+        self.beg_freq = self.findChild(QLineEdit,"beg_freq") 
+        self.beg_freq.setStyleSheet('color : #8bc34a')
+        self.beg_freq.textChanged.connect(lambda: self.check_all())
+
+        self.end_freq = self.findChild(QLineEdit,"end_freq")
+        self.end_freq.setStyleSheet('color : #8bc34a')
+        self.end_freq.textChanged.connect(lambda: self.check_all())
+
+        self.duration = self.findChild(QLineEdit,"duration") 
+        self.duration.setStyleSheet('color : #8bc34a')
+        self.duration.textChanged.connect(lambda: self.check_all())
+
+        self.label_3 = self.findChild(QLabel,'label_3')
+
+        self.srate = self.findChild(QComboBox,"srate")
+        self.srate.setStyleSheet('color : #8bc34a')
+        self.srate.currentIndexChanged.connect(lambda: self.check_all())
+
+        self.label_4 = self.findChild(QLabel,"label_4")
+
+        self.save_button = self.findChild(QPushButton,"save_button")
+        self.save_button.clicked.connect(lambda: self.saveFile())
+
+        self.label_5 = self.findChild(QLabel,"label_5")
+
+        self.gen_button = self.findChild(QPushButton,"gen_button")
+        self.gen_button.clicked.connect(lambda: self.sweep())
         self.gen_button.setEnabled(False)
-        
-        self.play_button = QtWidgets.QPushButton(self,clicked=lambda: self.do_nothing())
-        self.play_button.setGeometry(QtCore.QRect(300, 120, 270, 51))
-        self.play_button.setObjectName("play_button")
+
+        self.play_button = self.findChild(QPushButton,"play_button")
         self.play_button.setVisible(False)
-        self.play_button.setText("Play sweep")        
-        
-        self.save_loc = ''        
+        self.play_button.clicked.connect(lambda: self.do_nothing())
+
+        self.save_loc = ''     
     
+
     def check_all(self):
         if self.beg_freq.text() == '' or self.beg_freq.text() == '0'\
             or self.end_freq.text() == '' or self.end_freq.text() == '0'\
@@ -730,7 +595,7 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         self.sweep_plot.clear()
         normdata = self.data/maax(abs(self.data))
         t = [x/int(self.srate.currentText()) for x in range(len(normdata))]
-        pen = pg.mkPen(color = '#8bc34a')
+        pen = mkPen(color = '#8bc34a')
         self.sweep_plot.plot(t[0:len(normdata)],normdata,pen=pen)
         # y ticks
         aymono = self.sweep_plot.getAxis('left')
@@ -743,13 +608,13 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         IR = asarray(self.data)
         f,t,Sxx = spectrogram(IR,fs=int(self.srate.currentText()),nfft=len(IR)//50,nperseg=len(IR)//400,scaling='spectrum')
         Sxx = 20*log10(transpose(Sxx))
-        img = pg.ImageItem()
+        img = ImageItem()
         img.setImage(Sxx)
-        tr = pg.Qt.QtGui.QTransform()
+        tr = QTransform()
         tr.scale(t[-1] / siize(Sxx, axis=0), f[-1] / siize(Sxx, axis=1))  
         img.setTransform(tr)
         self.spectro_plot.setLimits(xMin=0, xMax=t[-1], yMin=f[0], yMax=f[-1])
-        hist = pg.HistogramLUTItem()
+        hist = HistogramLUTItem()
         hist.setImageItem(img)
         hist.setLevels(miin(Sxx), maax(Sxx))
         hist.gradient.restoreState(
@@ -774,7 +639,7 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         return
 
     def saveFile(self):
-        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self,"Select saving location","","*.wav")
+        fileName, _ = QFileDialog.getSaveFileName(self,"Select saving location","","*.wav")
         if fileName[-4:] != '.wav':
                 fileName = fileName + '.wav'
         self.save_loc=fileName
@@ -782,55 +647,24 @@ class Ui_SweepGenerator(QtWidgets.QMainWindow):
         self.check_all()
         return
 
-class abtDial(QtWidgets.QMainWindow):
+class abtDial(QDialog):
     def __init__(self,parent=None):
         super(abtDial,self).__init__(parent)
-        self.setWindowTitle('About')
-        self.setWindowIcon(QtGui.QIcon('irmaker.ico'))
-        self.setFixedSize(400,300)
-        self.label = QtWidgets.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(10, 260, 380, 16))
-        self.label.setAlignment(QtCore.Qt.AlignHCenter)
-        self.label.setObjectName("label")
-        self.label.setText('Version 1.0.0')
+        #load ui file
+        loadUi(resource_path(R"add\about.ui"),self)
+        self.setWindowFlag(Qt.WindowContextHelpButtonHint,False)
 
-        self.label_2 = QtWidgets.QLabel(self)
-        self.label_2.setGeometry(QtCore.QRect(140, 10, 120, 120))
-        self.label_2.setText("")
-        self.label_2.setPixmap(QtGui.QPixmap("irmaker.png"))
-        self.label_2.setScaledContents(True)
-        self.label_2.setObjectName("label_2")
-
-        self.label_3 = QtWidgets.QLabel(self)
-        self.label_3.setGeometry(QtCore.QRect(170, 130, 61, 16))
-        self.label_3.setObjectName("label_3")
-        self.label_3.setText('IR Maker™')
-
-        self.label_5 = QtWidgets.QLabel(self)
-        self.label_5.setGeometry(QtCore.QRect(35, 222, 89, 16))
-        self.label_5.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-        self.label_5.setObjectName("label_5")
-        self.label_5.setText('Git repository : ')
-
-        self.label_6 = QtWidgets.QLabel(self)
-        self.label_6.setGeometry(QtCore.QRect(123, 222, 248, 16))
-        font = QtGui.QFont()
-        font.setUnderline(True)
-        self.label_6.setFont(font)
-        self.label_6.setTextFormat(QtCore.Qt.MarkdownText)
-        self.label_6.setText('https://github.com/JuanPabloZed/IR_Maker')
-        self.label_6.setOpenExternalLinks(True)
-        self.label_6.setObjectName("label_6")
-
-        self.label_7 = QtWidgets.QLabel(self)
-        self.label_7.setGeometry(QtCore.QRect(10, 170, 380, 34))
-        self.label_7.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_7.setObjectName("label_7")
-        self.label_7.setText("Copyright (c) 2023 Nathan Zwahlen, Benjamin Quiédeville\n& Hugo Perrier")
-
+        #show elements
+        self.label = self.findChild(QLabel,"label")
+        self.label_2 = self.findChild(QLabel,"label_2")
+        self.label_2.setPixmap(QPixmap(resource_path("add\irmaker.png")))
+        self.label_3 = self.findChild(QLabel,"label_3")
+        self.label_4 = self.findChild(QLabel,"label_4")
+        self.label_5 = self.findChild(QLabel,"label_5")
+        self.label_6 = self.findChild(QLabel,"label_6")
 
 def main():
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     main_window = Ui_MainWIndow()
     apply_stylesheet(app,theme='dark_lightgreen.xml')
     main_window.show()
