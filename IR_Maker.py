@@ -1,7 +1,7 @@
 from numpy.fft import rfft,rfftfreq
 from numpy import (array, log, exp, sin, pi, int16, flip, column_stack,
                    int32, float32, argmax, max as maax, asarray,pad,
-                   blackman, log10, min as miin, transpose, 
+                   hamming, log10, min as miin, transpose, 
                    size as siize, shape, floor)
 
 from scipy.io.wavfile import read,write as wriite
@@ -236,7 +236,6 @@ class Ui_MainWIndow(QMainWindow):
     def deconvolver(self):
         # load files
         _, outfile = read(self.recordfile_path, mmap=False)
-        print(shape(outfile))
         if outfile.ndim == 2:
             if shape(outfile)[1] > 2:
                 QMessageBox.critical(self,"Error","Multichannel files not supported.\nPlease select a response file in mono or stereo only.")
@@ -280,8 +279,12 @@ class Ui_MainWIndow(QMainWindow):
             # temporal shift to put the begining of the IR to temporal origin
                 # left channel
             i=0
-            while abs(irL[i]) < 10 and abs(irR[i]) < 10:
+            while abs(irL[i]) < 10 and abs(irR[i]) < 10 and i<len(irL)-1:
                 i += 1
+            crop = True
+            if i==len(irL)-1: #* if went all the way until end of the signal, leave it as is and don't crop anything
+                i=0
+                crop = False
             irL = irL[i:len(irL)]
                 # right channel
             irR = irR[i:len(irR)]
@@ -293,7 +296,7 @@ class Ui_MainWIndow(QMainWindow):
             normirL = normir[:,0]
             normirR = normir[:,1]
             i = -1
-            while abs(normirL[i]) <= 300000:
+            while abs(normirL[i]) <= 300000 and abs(i) < len(normirL)-1 and crop:
                 i -= 1
             normirL = normirL[0:i]
             normirR = normirR[0:i]
@@ -305,8 +308,8 @@ class Ui_MainWIndow(QMainWindow):
         elif outfile.ndim == 1:
             # removing the last zeros of the recording
             i = -1
-            while abs(outfile[i]) == 0:
-                i -= 1
+            while abs(outfile[i]) == 0 and abs(i) < len(ir)-1:
+                i -= 1  
             outfile = outfile[0:len(outfile)+i]
     
             # normalization of the recording
@@ -314,25 +317,29 @@ class Ui_MainWIndow(QMainWindow):
     
             # "deconvolving"
             ir = convolve(normoutfile, norminvess)
+            
             # temporal shift, same as stereo mode
             i=0
-            while abs(ir[i]) < 10:
+            while abs(ir[i]) < 10 and i < len(ir)-1:
                 i += 1
+            crop = True 
+            if i == len(ir)-1: #* if went all the way until end of the signal, leave it as is and don't crop anything
+                    i = 0
+                    crop = False
+
             ir = ir[i:len(ir)]
             # normalization of the IR 
             normir = normalize(ir)
             normir = normir.astype(float32)
             i = -1
-            while abs(normir[i]) <= 0.00009:
+            while abs(normir[i]) <= 0.00009 and abs(i) < len(normir)-1 and crop:
                 i -= 1
             normir = normir[0:i]
-            index = argmax(normir)
-            if index > 10:
-                normir = normir[index-10:]
             
-            # normir = smooth(normir,10)
-                
-          
+            index = argmax(normir)
+            if index > 10 and crop:
+                normir = normir[index-10:]
+
             return (normir)
 
     def temporalgraph_fct(self,data):
@@ -376,17 +383,15 @@ class Ui_MainWIndow(QMainWindow):
             return
 
     def spectralgraph_fct(self,data):
-        print(f'dim ir = {data.ndim}')
         # ir mono ir, show FFT
         if data.ndim == 1:
-            print('fft')
             self.spectrogram_plot.setVisible(False)
             self.spectral_plot.setVisible(True)
             # get signal & compute FFT
             npoutfile = asarray(data)/maax(data)
             pad_length = npow2(npow2(len(npoutfile)))
             padded_npoutfile = pad(npoutfile,(0,pad_length-len(npoutfile)),'constant',constant_values=(0,0))
-            h_panned_npoutfile = padded_npoutfile*blackman(pad_length)
+            h_panned_npoutfile = padded_npoutfile*hamming(pad_length)
             # fft_outfile = np.fft.rfft(h_panned_npoutfile)
             fft_outfile = rfft(h_panned_npoutfile)
             fft_toplot = smooth(20*log10(abs(fft_outfile)),45)-maax(20*log10(abs(fft_outfile)))
@@ -443,7 +448,6 @@ class Ui_MainWIndow(QMainWindow):
         for index in self.files_list.selectedIndexes():
             recordName = self.files_list.model().fileName(index)
             self.recordfile_path = self.files_list.model().filePath(index)
-            print(self.recordfile_path)
         self.save_name = Path(recordName).stem + ' - IR.wav'
         self.check_all()
         return
