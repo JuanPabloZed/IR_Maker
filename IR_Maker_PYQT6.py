@@ -11,9 +11,9 @@ from soundfile import write
 from PyQt6 import uic
 from PyQt6.QtGui import QPixmap,QFileSystemModel
 from PyQt6.QtCore import QDir
-from PyQt6.QtCore import Qt
+# from PyQt6.QtCore import Qt
 from PyQt6.QtCore import QUrl
-from PyQt6.QtMultimedia import QSoundEffect,QAudioOutput, QMediaPlayer
+from PyQt6.QtMultimedia import QAudioOutput, QMediaPlayer
 from PyQt6.QtWidgets import (QMainWindow, QDialog ,QPushButton, QApplication, 
                              QMessageBox, QLineEdit, QLabel, QComboBox, 
                              QCheckBox, QFileDialog, 
@@ -236,9 +236,7 @@ class Ui_MainWIndow(QMainWindow):
         self.audio_output = QAudioOutput()
         self.player.setAudioOutput(self.audio_output)
         self.player.setSource(QUrl.fromLocalFile(datapath))
-        # audio_output.setVolume(50)
         self.player.play()
-        # QSound.play(datapath)
         return
     
     def deconvolver(self):
