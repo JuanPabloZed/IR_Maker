@@ -6,13 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>980</width>
+    <width>915</width>
     <height>650</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>850</width>
+    <width>915</width>
     <height>650</height>
    </size>
   </property>
@@ -32,7 +32,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_6">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,5,4,3">
+     <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,4,4,3">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
@@ -173,7 +173,7 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>230</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
@@ -233,7 +233,7 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>275</width>
+          <width>260</width>
           <height>0</height>
          </size>
         </property>
@@ -276,7 +276,7 @@ folder in recordings folder)</string>
               <widget class="QPushButton" name="browseout_button">
                <property name="minimumSize">
                 <size>
-                 <width>120</width>
+                 <width>80</width>
                  <height>0</height>
                 </size>
                </property>
@@ -456,7 +456,7 @@ folder in recordings folder)</string>
           </property>
           <property name="minimumSize">
            <size>
-            <width>0</width>
+            <width>110</width>
             <height>80</height>
            </size>
           </property>
