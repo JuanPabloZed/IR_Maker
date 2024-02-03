@@ -8,14 +8,15 @@ from scipy.io.wavfile import read,write as wriite
 from scipy.signal import convolve, spectrogram
 from soundfile import write
 
-from PyQt5.uic import loadUi
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import QDir
-from PyQt5.QtCore import Qt
-from PyQt5.QtMultimedia import QSound
-from PyQt5.QtWidgets import (QMainWindow, QDialog ,QPushButton, QApplication, 
+from PyQt6 import uic
+from PyQt6.QtGui import QPixmap,QFileSystemModel
+from PyQt6.QtCore import QDir
+# from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QUrl
+from PyQt6.QtMultimedia import QAudioOutput, QMediaPlayer
+from PyQt6.QtWidgets import (QMainWindow, QDialog ,QPushButton, QApplication, 
                              QMessageBox, QLineEdit, QLabel, QComboBox, 
-                             QCheckBox, QFileSystemModel, QFileDialog, 
+                             QCheckBox, QFileDialog, 
                              QRadioButton, QGroupBox, QListView)
 
 from pyqtgraph.Qt.QtGui import QTransform
@@ -43,7 +44,7 @@ class Ui_MainWIndow(QMainWindow):
         super(Ui_MainWIndow,self).__init__(parent)
         
         # load ui
-        loadUi(resource_path("add\main_window.ui"),self)
+        uic.loadUi(resource_path("add6\main_window.ui"),self)
 
         # show elements
         self.about_button = self.findChild(QPushButton,"about_button")
@@ -231,7 +232,11 @@ class Ui_MainWIndow(QMainWindow):
 
     def playIR(self):
         datapath = self.outpath
-        QSound.play(datapath)
+        self.player = QMediaPlayer()
+        self.audio_output = QAudioOutput()
+        self.player.setAudioOutput(self.audio_output)
+        self.player.setSource(QUrl.fromLocalFile(datapath))
+        self.player.play()
         return
     
     def deconvolver(self):
@@ -474,7 +479,8 @@ class Ui_MainWIndow(QMainWindow):
     def openResponseFolder(self):
         self.folderpath = QFileDialog.getExistingDirectory(self, 'Select recordings folder')
         self.files_list.setRootIndex(self.fileModel.setRootPath(self.folderpath))
-        self.fileModel.setFilter(QDir.NoDotAndDotDot |  QDir.Files)
+        # self.fileModel.setFilter(QDir.NoDotAndDotDot |  QDir.Files)
+        self.fileModel.setFilter(QDir.Filter.Files)
         self.fileModel.setNameFilters(['*.wav'])
         self.fileModel.setNameFilterDisables(False)
         self.loadfolder_button.setText(Path(self.folderpath).name)
@@ -499,8 +505,7 @@ class Ui_SweepGenerator(QDialog):
         super(Ui_SweepGenerator,self).__init__(parent)
 
         # load ui
-        loadUi(resource_path("add\sweep_window.ui"),self)
-        self.setWindowFlag(Qt.WindowContextHelpButtonHint,False)
+        uic.loadUi(resource_path("add6\sweep_window.ui"),self)
         # show elements
         self.spectro_plot = self.findChild(PlotWidget,"spectro_plot")
         self.spectro_plot.setBackground('k')
@@ -639,7 +644,12 @@ class Ui_SweepGenerator(QDialog):
 
     def play(self):
         data = self.save_loc
-        QSound.play(data)
+        self.player = QMediaPlayer()
+        self.audio_output = QAudioOutput()
+        self.player.setAudioOutput(self.audio_output)
+        self.player.setSource(QUrl.fromLocalFile(data))
+        # audio_output.setVolume(50)
+        self.player.play()        # QSound.play(data)
         return
 
     def saveFile(self):
@@ -655,13 +665,12 @@ class abtDial(QDialog):
     def __init__(self,parent=None):
         super(abtDial,self).__init__(parent)
         #load ui file
-        loadUi(resource_path(R"add\about.ui"),self)
-        self.setWindowFlag(Qt.WindowContextHelpButtonHint,False)
+        uic.loadUi(resource_path(R"add6\about.ui"),self)
 
         #show elements
         self.label = self.findChild(QLabel,"label")
         self.label_2 = self.findChild(QLabel,"label_2")
-        self.label_2.setPixmap(QPixmap(resource_path("add\irmaker.png")))
+        self.label_2.setPixmap(QPixmap(resource_path("add6\irmaker.png")))
         self.label_3 = self.findChild(QLabel,"label_3")
         self.label_4 = self.findChild(QLabel,"label_4")
         self.label_5 = self.findChild(QLabel,"label_5")
@@ -672,7 +681,7 @@ def main():
     main_window = Ui_MainWIndow()
     apply_stylesheet(app,theme='dark_lightgreen.xml')
     main_window.show()
-    app.exec_()
+    app.exec()
 
 if __name__ == '__main__':
     main()
