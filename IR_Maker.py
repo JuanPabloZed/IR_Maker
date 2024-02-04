@@ -88,6 +88,10 @@ class Ui_MainWIndow(QMainWindow):
         self.mpt_checkbox.setText("MP Transform (coming soon)")
         self.mpt_checkbox.setEnabled(False)
 
+        self.autosr_checkbox = self.findChild(QCheckBox, "autosr_check")
+        self.autosr_checkbox.setChecked(True)
+        self.autosr_checkbox.clicked.connect(lambda: self.enableSR())
+
         self.bitdepth_combo = self.findChild(QComboBox,"bitdepth_combo")
         self.bitdepth_combo.setStyleSheet("color: #8bc34a")
 
@@ -109,6 +113,7 @@ class Ui_MainWIndow(QMainWindow):
 
         self.srate = self.findChild(QLineEdit,"srate")
         self.srate.setStyleSheet("color: #8bc34a")
+        self.srate.setEnabled(False)
         self.srate.textChanged.connect(lambda: self.check_all())
 
         self.createir_button = self.findChild(QPushButton,"createir_button")
@@ -146,6 +151,16 @@ class Ui_MainWIndow(QMainWindow):
         self.sweep_path = ''
         self.save_name = '' # for autosave
         self.save_path = '' # for custom save
+
+    def enableSR(self):
+        if self.autosr_checkbox.isChecked() == True and self.noselec == 0:
+            self.srate.setText(str(self.recsr))
+            self.srate.setEnabled(False)
+        elif self.autosr_checkbox.isChecked()==True and self.noselec == 1:
+            self.srate.setEnabled(False)
+        elif self.autosr_checkbox.isChecked() == False:
+            self.srate.setEnabled(True)
+        return
 
     def check_all(self):
         if self.customsave_radio.isChecked() == False:
@@ -185,13 +200,13 @@ class Ui_MainWIndow(QMainWindow):
                 and self.srate.text() != '' and self.srate.text() != '0':
 
                 self.createir_button.setEnabled(True)
-
+        self.enableSR()
     # functions section
     def programme(self):
         # compute the IR
         ### ERRORS MANAGEMENT ###
 
-           
+
         ir = self.deconvolver()
         # custom path or auto path for saving IR file
         self.outpath = ''
@@ -448,6 +463,8 @@ class Ui_MainWIndow(QMainWindow):
         for index in self.files_list.selectedIndexes():
             recordName = self.files_list.model().fileName(index)
             self.recordfile_path = self.files_list.model().filePath(index)
+        self.recsr,_ = read(self.recordfile_path)
+        print(self.recsr)
         self.save_name = Path(recordName).stem + ' - IR.wav'
         self.check_all()
         return
