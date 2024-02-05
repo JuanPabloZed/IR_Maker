@@ -50,6 +50,8 @@ class Ui_MainWIndow(QMainWindow):
         self.about_button.clicked.connect(lambda: self.aboutDial())
         
         self.sweep_box  = self.findChild(QGroupBox,"sweep_box")
+        self.response_box = self.findChild(QGroupBox,"response_box")
+        self.output_box = self.findChild(QGroupBox,"output_box")
 
         self.browsesweep_button = self.findChild(QPushButton,"browsesweep_button")
         self.browsesweep_button.clicked.connect(lambda: self.openFileSweep())
@@ -70,7 +72,6 @@ class Ui_MainWIndow(QMainWindow):
         self.sweepgen_button = self.findChild(QPushButton,"sweepgen_button")
         self.sweepgen_button.clicked.connect(lambda: self.sweep())
 
-        self.response_box = self.findChild(QGroupBox,"response_box")
 
         self.loadfolder_button = self.findChild(QPushButton,"loadfolder_button")
         self.loadfolder_button.clicked.connect(lambda: self.openResponseFolder())
@@ -81,7 +82,6 @@ class Ui_MainWIndow(QMainWindow):
         self.files_list.selectionModel().selectionChanged.connect(lambda: self.selectInList())
         self.noselec = 1
 
-        self.output_box = self.findChild(QGroupBox,"output_box")
 
         self.mpt_checkbox = self.findChild(QCheckBox,"mpt_checkbox")
         self.mpt_checkbox.stateChanged.connect(lambda: self.err_mess())
@@ -152,17 +152,29 @@ class Ui_MainWIndow(QMainWindow):
         self.save_name = '' # for autosave
         self.save_path = '' # for custom save
 
+
+    #* functions section
+        
     def enableSR(self):
+        """
+        auto-assign the output sample rate if user wants to have the cleanest IR
+        """
         if self.autosr_checkbox.isChecked() == True and self.noselec == 0:
             self.srate.setText(str(self.recsr))
             self.srate.setEnabled(False)
+
         elif self.autosr_checkbox.isChecked()==True and self.noselec == 1:
             self.srate.setEnabled(False)
+
         elif self.autosr_checkbox.isChecked() == False:
             self.srate.setEnabled(True)
         return
 
     def check_all(self):
+        """
+        Check if all necessary parameters for the creation of the IR are entered 
+        """
+        # depending of the saving mode (auto or custom)
         if self.customsave_radio.isChecked() == False:
         # if ONE thing not done, disable create button
             if self.browsesweep_button.text() == "Browse sweep file" or self.browsesweep_button.text() == '' \
@@ -200,26 +212,28 @@ class Ui_MainWIndow(QMainWindow):
                 and self.srate.text() != '' and self.srate.text() != '0':
 
                 self.createir_button.setEnabled(True)
+
         self.enableSR()
-    # functions section
+
     def programme(self):
-        # compute the IR
-        ### ERRORS MANAGEMENT ###
+        # create the output IR file
 
+        ir = self.deconvolver() #compute IR
 
-        ir = self.deconvolver()
-        # custom path or auto path for saving IR file
         self.outpath = ''
+        # custom path or auto path for saving IR file
+        # autosave mode (nice if lots of files are to be processed)
         if self.autosave_radio.isChecked() == True:
             irdir_path = self.folderpath + '/IR'
-            # if autosave file already created, don't create it again
+            # check if auto output directory is already created
             if path.isdir(irdir_path) == False:
                 mkdir(irdir_path)
             self.outpath = irdir_path +'/'+ self.save_name
+        #custom save mode (slower workflow)
         elif self.customsave_radio.isChecked() == True:
             self.outpath = self.save_path
 
-        # save the IR file depending on the desired bit depth
+        # save the IR file depending on the desired bit depth (PCM only)
         if self.bitdepth_combo.currentIndex() == 0: # 16 bits
             write(self.outpath,ir,int(self.srate.text()),'PCM_16')
         elif self.bitdepth_combo.currentIndex() == 1: # 24 bits
@@ -231,6 +245,7 @@ class Ui_MainWIndow(QMainWindow):
         self.temporalgraph_fct(ir)
         self.spectralgraph_fct(ir)
 
+        # when IR is created, able to play it
         self.playir_button.clicked.disconnect()
         self.playir_button.clicked.connect(lambda: self.playIR())
         self.playir_button.setEnabled(True)
@@ -238,24 +253,33 @@ class Ui_MainWIndow(QMainWindow):
         return
 
     def do_nothing(self):
+        """For UI elements that have to temporary do nothing"""
         return
 
     def aboutDial(self):
+        """Open the 'About' window"""
         dialog = abtDial(self)
         dialog.show()
 
     def playIR(self):
+        """Play latest created IR"""
         datapath = self.outpath
         QSound.play(datapath)
         return
     
     def deconvolver(self):
+        """
+        Computes the impulse response of the selected file in the lisview using the reverse sweep convolution method.
+        """
         # load files
         _, outfile = read(self.recordfile_path, mmap=False)
+        # error if multichannel file
         if outfile.ndim == 2:
             if shape(outfile)[1] > 2:
                 QMessageBox.critical(self,"Error","Multichannel files not supported.\nPlease select a response file in mono or stereo only.")
                 return
+        #todo: manage multi-channel processing
+            
         # sweep read
         ress, ess1 = read(self.sweep_path)
         f1 = int(self.beg_freq.text())
@@ -289,30 +313,30 @@ class Ui_MainWIndow(QMainWindow):
             normoutfileL = normalize(outfileL)
             normoutfileR = normalize(outfileR)
             
-            # "deconvolving"
+            # "deconvolving" (convolve with the inverse ESS)
             irL = convolve(normoutfileL, norminvess)
             irR = convolve(normoutfileR, norminvess)
-            # temporal shift to put the begining of the IR to temporal origin
-                # left channel
+            # temporal shift to get rid of low pre-ring
             i=0
             while abs(irL[i]) < 10 and abs(irR[i]) < 10 and i<len(irL)-1:
                 i += 1
             crop = True
-            if i==len(irL)-1: #* if went all the way until end of the signal, leave it as is and don't crop anything
+            if i==len(irL)-1: #* if went all the way until end of the signal, leave it as is and don't crop anything (happens when nthere's no pre-ring)
                 i=0
                 crop = False
+
             irL = irL[i:len(irL)]
-                # right channel
             irR = irR[i:len(irR)]
             # merge in one stereo wav file
             ir = column_stack((irL, irR))
-            # normalization of the IR for int16 encoding
-            normir = normalize(ir)*2**31-1
-            normir = normir.astype(int32)
+            # normalization of the IR for further PCM encoding
+            normir = normalize(ir)
+            normir = normir.astype(float32)
             normirL = normir[:,0]
             normirR = normir[:,1]
             i = -1
-            while abs(normirL[i]) <= 300000 and abs(i) < len(normirL)-1 and crop:
+            # crop the end of the IR to avoid too long output files
+            while abs(normirL[i]) <= 0.00009 and abs(i) < len(normirL)-1 and crop:
                 i -= 1
             normirL = normirL[0:i]
             normirR = normirR[0:i]
@@ -347,7 +371,7 @@ class Ui_MainWIndow(QMainWindow):
             normir = normalize(ir)
             normir = normir.astype(float32)
             i = -1
-            while abs(normir[i]) <= 0.00009 and abs(i) < len(normir)-1 and crop:
+            while abs(normir[i]) <= 0.00015 and abs(i) < len(normir)-1 and crop:
                 i -= 1
             normir = normir[0:i]
             
@@ -409,7 +433,7 @@ class Ui_MainWIndow(QMainWindow):
             h_panned_npoutfile = padded_npoutfile*hamming(pad_length)
             # fft_outfile = np.fft.rfft(h_panned_npoutfile)
             fft_outfile = rfft(h_panned_npoutfile)
-            fft_toplot = smooth(20*log10(abs(fft_outfile)),45)-maax(20*log10(abs(fft_outfile)))
+            fft_toplot = smooth(20*log10(abs(fft_outfile)),45)-maax(20*log10(abs(fft_outfile))) # normalizing here is only to get the same representation as most EQs, that show negative dB values
             f = rfftfreq(pad_length,1/int(self.srate.text()))
             i=0
             j=-1
@@ -434,8 +458,9 @@ class Ui_MainWIndow(QMainWindow):
             self.spectrogram_plot.setVisible(True)
             # spectro de la moyenne des deux canaux
             IR = (asarray(data[:,0]) + asarray(data[:,1]))/2
+            print(len(IR))
             f,t,Sxx = spectrogram(IR,fs=int(self.srate.text()),nfft=len(IR)//50,nperseg=len(IR)//400,scaling='spectrum')
-            Sxx = 20*log10(transpose(Sxx))
+            Sxx = 20*log10(transpose(Sxx),where=transpose(Sxx)>0)
             img = ImageItem()
             img.setImage(Sxx)
             tr = QTransform()
