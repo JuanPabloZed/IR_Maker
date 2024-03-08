@@ -264,6 +264,8 @@ class Ui_MainWIndow(QMainWindow):
     def playIR(self):
         """Play latest created IR"""
         datapath = self.outpath
+        testsr,_ = read(datapath)
+        print(testsr)
         QSound.play(datapath)
         return
     
@@ -489,6 +491,8 @@ class Ui_MainWIndow(QMainWindow):
             recordName = self.files_list.model().fileName(index)
             self.recordfile_path = self.files_list.model().filePath(index)
         self.recsr,_ = read(self.recordfile_path)
+        if self.recsr != self.sw_srate:
+            QMessageBox.warning(self,"Warning: different sample rates", f"The response file and the sweep file have different sample rates ({self.recsr} Hz and {self.sw_srate} Hz). The resulting IR might not be as accurate as it could.")
         print(self.recsr)
         self.save_name = Path(recordName).stem + ' - IR.wav'
         self.check_all()
@@ -496,7 +500,7 @@ class Ui_MainWIndow(QMainWindow):
 
     def openFileSweep(self):
         fileName, _ = QFileDialog.getOpenFileName(self,"Select sweep file", "","*wav")
-        test = read(fileName)[1] 
+        self.sw_srate, test = read(fileName)
         if test.ndim == 2 :
             _,c = shape(test)
             while c > 2 :
