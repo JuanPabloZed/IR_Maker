@@ -26,10 +26,12 @@ Be sure to use the same sample rate for the ESS, the response and the IR to get 
 
 /!\ COMPILING INTO .exe /!\
 
-If you want to make a .exe out of this code, you can by installing the different necessary modules contained in requirements.txt, and then typing the following command in cmd: 
+If you want to modify the code yourself and not use the .exe provided in this repository (roughly 250MB when unpacked), you can by installing the different necessary modules contained in requirements.txt, and then typing the following command in cmd: 
 
 pyinstaller --noconfirm --onedir --windowed --icon "absolute/path/to/irmaker.ico" --name "IR Maker" --add-data "absolute/path/to/irmaker.png;."  "absolute/path/to/IRMaker.py"
 
-This will create a "build" and a "dist" folder inside your project folder. You will find the .exe to dist/IR Maker/IR Maker.exe !
+This will create a "build" and a "dist" folder inside your project folder. You will find the .exe to dist/IR Maker/IR Maker.exe ! 
+Note : the .exe needs to stay in the "IR Maker" folder to run properly.
+
 
 Thank you for using our application !
